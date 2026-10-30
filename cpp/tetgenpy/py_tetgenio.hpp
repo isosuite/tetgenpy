@@ -154,7 +154,7 @@ public:
                  Base_::numberofpointattributes);
 
       Base_::pointattributelist = new REAL[point_attributes_size];
-      std::copy_n(static_cast<REAL*>(points.request().ptr),
+      std::copy_n(static_cast<REAL*>(point_attributes.request().ptr),
                   point_attributes_size,
                   Base_::pointattributelist);
       PrintDebug(debug, "set pointattributelist");
@@ -276,14 +276,15 @@ public:
     }
     PrintDebug(debug, "set facetlist.");
 
-    // set facet markers. could put it to the loop above,
-    // but maybe not everyone needs this
-    if (n_facet_markers != 0) {
-      Base_::facetmarkerlist = new int[Base_::numberoffacets];
-      std::copy_n(static_cast<int*>(facet_markers.request().ptr),
-                  // Base_::numberoffacets, //
-                  n_facets, //
-                  Base_::facetmarkerlist);
+    // set facet markers. h_facets always carry a marker, so the list is
+    // needed as soon as there is any h_facet.
+    if (n_facet_markers != 0 || n_h_facets > 0) {
+      Base_::facetmarkerlist = new int[Base_::numberoffacets]();
+      if (n_facet_markers != 0) {
+        std::copy_n(static_cast<int*>(facet_markers.request().ptr),
+                    n_facets,
+                    Base_::facetmarkerlist);
+      }
       PrintDebug(debug, "set facetmarkerlist for facets.");
     }
 
@@ -342,7 +343,7 @@ public:
                                hole_coord.size(),
                                ")");
           }
-          for (py::handle coord : hole) {
+          for (py::handle coord : hole_coord) {
             f->holelist[i * dim_ + j] = coord.cast<REAL>();
             ++j;
           }
@@ -511,7 +512,7 @@ public:
                   Base_::refine_elem_list);
       PrintDebug(debug, "set refine_elem_list.");
 
-      Base_::refine_elem_vol_list = new REAL[refine_elem_size];
+      Base_::refine_elem_vol_list = new REAL[Base_::numberofrefineelems];
       std::copy_n(static_cast<REAL*>(refine_element_constraints.request().ptr),
                   Base_::numberofrefineelems,
                   Base_::refine_elem_vol_list);
@@ -592,6 +593,13 @@ public:
     return CopyFromBase(Base_::numberofpoints, dim_, Base_::pointlist);
   }
 
+  // I / O
+  py::array_t<REAL> GetPointAttributes() {
+    return CopyFromBase(Base_::numberofpoints,
+                        Base_::numberofpointattributes,
+                        Base_::pointattributelist);
+  }
+
   // I - only for refinement / O
   py::array_t<int> GetTetrahedra() {
     return CopyFromBase(Base_::numberoftetrahedra,
@@ -600,7 +608,7 @@ public:
   }
 
   // I - only for refinement / O
-  py::array_t<int> GetTetrahedronAttributes() {
+  py::array_t<REAL> GetTetrahedronAttributes() {
     return CopyFromBase(Base_::numberoftetrahedra,
                         Base_::numberoftetrahedronattributes,
                         Base_::tetrahedronattributelist);
@@ -803,7 +811,7 @@ public:
 
   void SaveFaces(std::string fbase) { Base_::save_faces(ToCharPtr(fbase)); }
 
-  void SaveEdges(std::string fbase) { Base_::save_neighbors(ToCharPtr(fbase)); }
+  void SaveEdges(std::string fbase) { Base_::save_edges(ToCharPtr(fbase)); }
 
   void SaveNeighbors(std::string fbase) {
     Base_::save_neighbors(ToCharPtr(fbase));
@@ -856,6 +864,7 @@ inline void add_pytetgenio_class(py::module_& m) {
            py::arg("edge_markers") = py::array_t<int>(),
            py::arg("debug") = false)
       .def("points", &PyTetgenIo::GetPoints)
+      .def("pointattributes", &PyTetgenIo::GetPointAttributes)
       .def("tetrahedra", &PyTetgenIo::GetTetrahedra)
       .def("tetrahedronattributes", &PyTetgenIo::GetTetrahedronAttributes)
       .def("trifaces", &PyTetgenIo::GetTriFaces)
