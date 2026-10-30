@@ -99,5 +99,93 @@ class SaveEdgesTest(unittest.TestCase):
             self.assertFalse(os.path.exists(base + ".neigh"))
 
 
+class NonContiguousAndDtypeRobustnessTest(unittest.TestCase):
+    def test_non_contiguous_and_fortran_arrays(self):
+        # 16 points, sliced with step 2 (non-contiguous)
+        pts = np.vstack([cube_points(), cube_points() + 2.0])
+        sliced_pts = pts[::2]
+        self.assertFalse(sliced_pts.flags.c_contiguous)
+
+        tio = tetgenpy.TetgenIO()
+        tio.setup_points(sliced_pts)
+        out = tetgenpy.tetrahedralize("Q", tio)
+        self.assertGreater(len(out.points()), 0)
+
+        # Fortran contiguous array
+        f_pts = np.asfortranarray(cube_points())
+        self.assertFalse(f_pts.flags.c_contiguous)
+        tio_f = tetgenpy.TetgenIO()
+        tio_f.setup_points(f_pts)
+        out_f = tetgenpy.tetrahedralize("Q", tio_f)
+        self.assertGreater(len(out_f.points()), 0)
+
+    def test_int64_and_float32_conversion(self):
+        # numpy on 64-bit platforms defaults to int64
+        pts_f32 = cube_points().astype(np.float32)
+        tio = tetgenpy.TetgenIO()
+        tio.setup_points(pts_f32)
+        out = tetgenpy.tetrahedralize("Q", tio)
+
+        in_tets = out.tetrahedra()
+        self.assertGreater(len(in_tets), 0)
+
+        # Pass int64 tetrahedra to setup_tetmesh
+        tets_i64 = in_tets.astype(np.int64)
+        tio2 = tetgenpy.TetgenIO()
+        tio2.setup_tetmesh(out.points(), tets_i64)
+        out2 = tetgenpy.tetrahedralize("rQ", tio2)
+        self.assertGreaterEqual(len(out2.tetrahedra()), len(in_tets))
+
+
+class ThreadingAndGilReleaseTest(unittest.TestCase):
+    def test_concurrent_tetrahedralize(self):
+        import concurrent.futures
+
+        def mesh_cube(scale):
+            pts = cube_points() * scale
+            tio = tetgenpy.TetgenIO()
+            tio.setup_points(pts)
+            out = tetgenpy.tetrahedralize("Q", tio)
+            return len(out.tetrahedra())
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+            futures = [pool.submit(mesh_cube, i + 1.0) for i in range(8)]
+            results = [f.result() for f in futures]
+
+        self.assertEqual(len(results), 8)
+        for count in results:
+            self.assertGreater(count, 0)
+
+
+class DefaultArgumentsTest(unittest.TestCase):
+    def test_setup_with_defaults(self):
+        # Test calling setup_points without optional arguments
+        tio = tetgenpy.TetgenIO()
+        tio.setup_points(cube_points())
+        out = tetgenpy.tetrahedralize("Q", tio)
+        self.assertGreater(len(out.tetrahedra()), 0)
+
+        # Test calling setup_plc without optional arguments
+        tio_plc = tetgenpy.TetgenIO()
+        tio_plc.setup_plc(cube_points(), CUBE_FACES)
+        out_plc = tetgenpy.tetrahedralize("Q", tio_plc)
+        self.assertGreater(len(out_plc.tetrahedra()), 0)
+
+
+class ErrorHandlingTest(unittest.TestCase):
+    def test_invalid_shape_exception_message(self):
+        tio = tetgenpy.TetgenIO()
+        # Shape mismatch in column count
+        with self.assertRaises(RuntimeError) as ctx:
+            tio.setup_points(np.zeros((5, 2)))
+        self.assertIn("shape mismatch in dimension [ 1 ]", str(ctx.exception))
+
+        # Dim mismatch (1D instead of 2D)
+        with self.assertRaises(RuntimeError) as ctx2:
+            tio.setup_points(np.zeros(5))
+        self.assertIn("dim mismatch", str(ctx2.exception))
+
+
 if __name__ == "__main__":
     unittest.main()
+

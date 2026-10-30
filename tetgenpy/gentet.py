@@ -29,15 +29,8 @@ def tetgen_exe(argv):
 
         return core.main(argv)
 
-    except RuntimeError as err:
-        # tetgen's termination/exit is caught as an error, which causes
-        # messsy prints.
-        # Informative messages would have been printed from tetgen by now.
-        # Mute RuntimeError with default message.
-        if str(err) == "Caught an unknown exception!":
-            return -1
-        else:
-            raise err
+    except RuntimeError:
+        return -1
 
 
 def _to_tetgenio(maybe_plc):
