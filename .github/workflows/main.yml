@@ -5,6 +5,10 @@ on:
     branches: ["main"]
   pull_request:
 
+env:
+  CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
+  CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux_2_28"
+
 jobs:
   macos_wheel:
     runs-on: macos-latest
