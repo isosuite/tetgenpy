@@ -296,8 +296,7 @@ public:
       f->polygonlist = new Base_::polygon[n_polygon_per_facet];
       p = &f->polygonlist[0];
       Base_::init(p);
-      const int n_polygon_vertices =
-          static_cast<int>(nb::len(polygon_connec));
+      const int n_polygon_vertices = static_cast<int>(nb::len(polygon_connec));
       p->numberofvertices = n_polygon_vertices;
       p->vertexlist = new int[n_polygon_vertices];
 
@@ -320,16 +319,14 @@ public:
     int h{n_facets};
     for (nb::handle hf : h_facets) {
       nb::sequence hf_description = nb::cast<nb::sequence>(hf);
-      nb::sequence list_of_polygons =
-          nb::cast<nb::sequence>(hf_description[0]);
+      nb::sequence list_of_polygons = nb::cast<nb::sequence>(hf_description[0]);
       nb::handle holes_handle = hf_description[1];
       int facet_mark = nb::cast<int>(hf_description[2]);
 
       f = &Base_::facetlist[h];
       Base_::init(f);
 
-      const int n_poly_per_hf =
-          static_cast<int>(nb::len(list_of_polygons));
+      const int n_poly_per_hf = static_cast<int>(nb::len(list_of_polygons));
       f->numberofpolygons = n_poly_per_hf;
       f->polygonlist = new Base_::polygon[n_poly_per_hf];
 
@@ -407,8 +404,9 @@ public:
       PrintDebug(debug, "-> set facetconstraintlist.");
     }
 
-    auto s_constraints_buf = ArrayInput<REAL>::from_object(
-        segment_constraints, "segment_constraints");
+    auto s_constraints_buf =
+        ArrayInput<REAL>::from_object(segment_constraints,
+                                      "segment_constraints");
     if (!s_constraints_buf.empty()) {
       PrintDebug(debug, "setting segment constraints.");
       s_constraints_buf.check_shape({-1, n_segment_constraint_entries_},
@@ -493,8 +491,9 @@ public:
       Base_::numberofrefineelems = static_cast<int>(ref_elems.shape[0]);
       PrintDebug(debug, "set numberofrefineelems:", Base_::numberofrefineelems);
 
-      auto ref_vols = ArrayInput<REAL>::from_object(
-          refine_element_constraints, "refine_element_constraints");
+      auto ref_vols =
+          ArrayInput<REAL>::from_object(refine_element_constraints,
+                                        "refine_element_constraints");
       ref_vols.check_shape({Base_::numberofrefineelems, 1},
                            "refine_element_constraints");
 
@@ -525,8 +524,7 @@ public:
       auto tf_markers =
           ArrayInput<int>::from_object(triface_markers, "triface_markers");
       if (!tf_markers.empty()) {
-        tf_markers.check_shape({Base_::numberoftrifaces, 1},
-                               "triface_markers");
+        tf_markers.check_shape({Base_::numberoftrifaces, 1}, "triface_markers");
         Base_::trifacemarkerlist = new int[tf_markers.total_size];
         std::copy_n(tf_markers.data,
                     tf_markers.total_size,
@@ -561,24 +559,23 @@ public:
 
   /* getters */
   template<typename DataType>
-  nb::ndarray<nb::numpy, DataType> CopyFromBase(
-      const int base_data_count,
-      const int base_data_stride,
-      const DataType* base_array_ptr) {
+  nb::ndarray<nb::numpy, DataType>
+  CopyFromBase(const int base_data_count,
+               const int base_data_stride,
+               const DataType* base_array_ptr) {
 
-    if (base_data_count <= 0 || base_array_ptr == nullptr ||
-        base_data_stride <= 0) {
+    if (base_data_count <= 0 || base_array_ptr == nullptr
+        || base_data_stride <= 0) {
       DataType* dummy = new DataType[1]();
       nb::capsule owner(dummy, [](void* p) noexcept {
         delete[] static_cast<DataType*>(p);
       });
-      size_t shape[2] = {0,
-                         static_cast<size_t>(std::max(0, base_data_stride))};
+      size_t shape[2] = {0, static_cast<size_t>(std::max(0, base_data_stride))};
       return nb::ndarray<nb::numpy, DataType>(dummy, 2, shape, owner);
     }
 
-    const size_t total_len = static_cast<size_t>(base_data_count) *
-                             static_cast<size_t>(base_data_stride);
+    const size_t total_len = static_cast<size_t>(base_data_count)
+                             * static_cast<size_t>(base_data_stride);
     DataType* data = new DataType[total_len];
     std::copy_n(base_array_ptr, total_len, data);
 
@@ -757,8 +754,9 @@ public:
     nb::capsule f2c_owner(f2c_ptr, [](void* p) noexcept {
       delete[] static_cast<int*>(p);
     });
-    size_t f2c_shape[2] = {n_vfacets,
-                           static_cast<size_t>(n_cell_neighbors_per_vorofacet_)};
+    size_t f2c_shape[2] = {
+        n_vfacets,
+        static_cast<size_t>(n_cell_neighbors_per_vorofacet_)};
     voronoi["facet2cell"] =
         nb::ndarray<nb::numpy, int>(f2c_ptr, 2, f2c_shape, f2c_owner);
     voronoi["facets"] = facets;

@@ -28,28 +28,35 @@ inline void Tetrahedralize(std::string switches,
 
   // call tetrahedralize
   try {
-    tetrahedralize(c_switches.data(), &in, &out, &additional_points, &background_mesh);
+    tetrahedralize(c_switches.data(),
+                   &in,
+                   &out,
+                   &additional_points,
+                   &background_mesh);
   } catch (int exit_code) {
     std::string msg;
     switch (exit_code) {
-      case 1:
-        msg = "TetGen error: Out of memory (exit code 1).";
-        break;
-      case 2:
-        msg = "TetGen error: Encountered an internal error (exit code 2).";
-        break;
-      case 3:
-        msg = "TetGen error: The input surface mesh contains self-intersections (exit code 3).";
-        break;
-      case 4:
-        msg = "TetGen error: A very small input feature size was detected (exit code 4).";
-        break;
-      case 10:
-        msg = "TetGen error: Invalid command line syntax or input file loading error (exit code 10).";
-        break;
-      default:
-        msg = "TetGen error with exit code " + std::to_string(exit_code) + ".";
-        break;
+    case 1:
+      msg = "TetGen error: Out of memory (exit code 1).";
+      break;
+    case 2:
+      msg = "TetGen error: Encountered an internal error (exit code 2).";
+      break;
+    case 3:
+      msg = "TetGen error: The input surface mesh contains self-intersections "
+            "(exit code 3).";
+      break;
+    case 4:
+      msg = "TetGen error: A very small input feature size was detected (exit "
+            "code 4).";
+      break;
+    case 10:
+      msg = "TetGen error: Invalid command line syntax or input file loading "
+            "error (exit code 10).";
+      break;
+    default:
+      msg = "TetGen error with exit code " + std::to_string(exit_code) + ".";
+      break;
     }
     throw std::runtime_error(msg);
   }

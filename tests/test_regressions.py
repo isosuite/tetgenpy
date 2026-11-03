@@ -65,7 +65,9 @@ class TetrahedronAttributeTest(unittest.TestCase):
 class FacetsWithHolesWithoutMarkersTest(unittest.TestCase):
     def test_h_facets_without_facet_markers(self):
         # used to write through a null facetmarkerlist
-        v = np.vstack([cube_points(), cube_points() * [0.4, 1, 0.4] + [0.3, 0, 0.3]])
+        v = np.vstack(
+            [cube_points(), cube_points() * [0.4, 1, 0.4] + [0.3, 0, 0.3]]
+        )
         front = [[[0, 1, 5, 4], [8, 9, 13, 12]], [[0.5, 0.0, 0.5]], 1]
         back = [[[2, 3, 7, 6], [10, 11, 15, 14]], [[0.5, 1.0, 0.5]], 2]
         sides = [
@@ -188,4 +190,3 @@ class ErrorHandlingTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

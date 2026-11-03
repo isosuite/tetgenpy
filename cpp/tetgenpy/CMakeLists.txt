@@ -1,4 +1,7 @@
-find_package(Python 3.9 COMPONENTS Interpreter Development.Module REQUIRED)
+find_package(
+  Python 3.9
+  COMPONENTS Interpreter Development.Module
+  REQUIRED)
 find_package(nanobind CONFIG REQUIRED)
 
 set(TETGENPY_SRCS init/py_tetgenio.cpp init/py_tetrahedralize.cpp
