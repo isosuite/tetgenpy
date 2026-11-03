@@ -10,7 +10,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        arch: [x86_64, arm64]
+        arch: [arm64]
         cw_build: ["pp*", "cp*"]
         exclude:
           - arch: arm64
