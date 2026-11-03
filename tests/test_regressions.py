@@ -2,6 +2,7 @@
 Regression tests for bugs found during the maintenance review.
 """
 
+import concurrent.futures
 import os
 import tempfile
 import unittest
@@ -141,7 +142,6 @@ class NonContiguousAndDtypeRobustnessTest(unittest.TestCase):
 
 class ThreadingAndGilReleaseTest(unittest.TestCase):
     def test_concurrent_tetrahedralize(self):
-        import concurrent.futures
 
         def mesh_cube(scale):
             pts = cube_points() * scale
