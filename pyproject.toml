@@ -93,4 +93,4 @@ exclude = "third_party"
 line-length = 75
 
 [tool.codespell]
-ignore-words-list = "addin"
+ignore-words-list = "addin,assertin"

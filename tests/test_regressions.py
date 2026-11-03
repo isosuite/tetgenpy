@@ -180,12 +180,14 @@ class ErrorHandlingTest(unittest.TestCase):
         # Shape mismatch in column count
         with self.assertRaises(RuntimeError) as ctx:
             tio.setup_points(np.zeros((5, 2)))
-        self.assertIn("shape mismatch in dimension [ 1 ]", str(ctx.exception))
+        self.assertTrue(
+            "shape mismatch in dimension [ 1 ]" in str(ctx.exception)
+        )
 
         # Dim mismatch (1D instead of 2D)
         with self.assertRaises(RuntimeError) as ctx2:
             tio.setup_points(np.zeros(5))
-        self.assertIn("dim mismatch", str(ctx2.exception))
+        self.assertTrue("dim mismatch" in str(ctx2.exception))
 
 
 if __name__ == "__main__":

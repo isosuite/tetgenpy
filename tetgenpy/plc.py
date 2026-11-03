@@ -71,10 +71,10 @@ class PLC:
 
         # process point attributes
         if point_attributes is not None:
-            if isinstance(point_attributes, (list, tuple, np.ndarray)):
+            if isinstance(point_attributes, list | tuple | np.ndarray):
                 point_attributes = np.asanyarray(point_attributes)
 
-            elif isinstance(point_attributes, (int, float)):
+            elif isinstance(point_attributes, int | float):
                 point_attributes = np.full((len(points), 1), point_attributes)
 
             # same sized attr
@@ -89,10 +89,10 @@ class PLC:
 
         # process point metrics
         if point_metrics is not None:
-            if isinstance(point_metrics, (list, tuple, np.ndarray)):
+            if isinstance(point_metrics, list | tuple | np.ndarray):
                 point_metrics = np.asanyarray(point_metrics)
 
-            elif isinstance(point_metrics, (int, float)):
+            elif isinstance(point_metrics, int | float):
                 point_metrics = np.full((len(points), 1), point_metrics)
 
             # same sized attr
@@ -110,13 +110,13 @@ class PLC:
         if isinstance(polygons, np.ndarray):
             polygons = polygons.tolist()
 
-        if not isinstance(polygons, (tuple, list)):
+        if not isinstance(polygons, tuple | list):
             raise TypeError(
                 "facets/polygons should be tuple, list, or np.ndarray"
             )
 
         if coordinates is None:
-            coordinates = isinstance(polygons[0][0], (tuple, list, np.ndarray))
+            coordinates = isinstance(polygons[0][0], tuple | list | np.ndarray)
 
         if coordinates:
             point_id_offset = len(self._points)
@@ -178,9 +178,9 @@ class PLC:
 
         # facet_ids
         single_facet_id = True
-        if isinstance(facet_id, (int, float)):
+        if isinstance(facet_id, int | float):
             self._facet_markers.extend([facet_id] * n_polygons)
-        elif isinstance(facet_id, (tuple, list, np.ndarray)):
+        elif isinstance(facet_id, tuple | list | np.ndarray):
             single_facet_id = False
             if isinstance(facet_id, np.ndarray):
                 facet_id = facet_id.ravel().tolist()
@@ -208,7 +208,7 @@ class PLC:
 
             # you can apply multiple constraints - you must have provided
             # multiple facet_ids.
-            if isinstance(facet_constraints, (tuple, list, np.ndarray)):
+            if isinstance(facet_constraints, tuple | list | np.ndarray):
                 if single_facet_id:
                     raise ValueError(
                         "Can't accept multiple facet_constaints, if only "
@@ -223,7 +223,7 @@ class PLC:
                         f"facet_constraints-({len(facet_constraints)})."
                     )
 
-            elif isinstance(facet_constraints, (int, float)):
+            elif isinstance(facet_constraints, int | float):
                 # single facet id -> single constraint
                 if single_facet_id:
                     f_constraints = np.array([[facet_id, facet_constraints]])
@@ -298,7 +298,7 @@ class PLC:
                     "Please specify `facet_id` to apply `facet_constaints`"
                 )
 
-            if not isinstance(facet_constraint, (int, float)):
+            if not isinstance(facet_constraint, int | float):
                 raise TypeError("facet_constraint should be float.")
 
             self._facet_with_holes_constraints.append(
@@ -361,10 +361,10 @@ class PLC:
         segments = np.asanyarray(segments)
         _check_2d_and_shape1("segments", segments, 2)
 
-        if isinstance(constraint, (int, float)):
+        if isinstance(constraint, int | float):
             constraint = np.full((len(segments), 1), constraint)
 
-        elif isinstance(constraint, (tuple, list, np.ndarray)):
+        elif isinstance(constraint, tuple | list | np.ndarray):
             constraint = np.asanyarray(constraint).reshape(-1, 1)
 
             if len(constraint) != len(segments):
