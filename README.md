@@ -25,7 +25,7 @@ import numpy as np
 
 # tetrahedralize unit cube
 # define points
-points=[
+points = [
     [0.0, 0.0, 0.0],
     [1.0, 0.0, 0.0],
     [0.0, 1.0, 0.0],
