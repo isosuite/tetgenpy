@@ -77,7 +77,7 @@ if(TETGEN_BUILD_EXECUTABLE)
   install(
     TARGETS tetgen_exec
     EXPORT ${TARGETS_EXPORT_NAME}
-    RUNTIME DESTINATION ${exec_dest})
+    RUNTIME DESTINATION ${exe_dest})
 endif()
 
 install(FILES "${project_config}" "${version_config}" DESTINATION "${cfg_dest}")

@@ -1,6 +1,6 @@
 #include <tetgenpy/py_tetrahedralize.hpp>
 
 namespace tetgenpy {
-namespace py = pybind11;
-void init_pytetrahedralize(py::module_& m) { add_pytetrahedralize(m); }
+namespace nb = nanobind;
+void init_pytetrahedralize(nb::module_& m) { add_pytetrahedralize(m); }
 } // namespace tetgenpy

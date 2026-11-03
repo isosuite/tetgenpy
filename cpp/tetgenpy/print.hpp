@@ -1,37 +1,29 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
+#include <utility>
 
 namespace tetgenpy {
 
-// Adapted from:
-// https://stackoverflow.com/questions/12342633/how-do-i-print-out-the-arguments-of-a-function-using-a-variadic-template
-
-// Single Print
 template<typename T>
-inline void SinglePrint(T t) {
-  std::cout << t << " ";
+inline void SinglePrint(std::ostream& os, T&& t) {
+  os << std::forward<T>(t) << " ";
 }
 
-// Base case, no args
-inline void Print() {}
+inline void PrintToStream(std::ostream&) {}
 
-// Split the parameter pack.
-// We want the first argument, so we can print it.
-// And the rest so we can forward it to the next call to f
 template<typename T, typename... Ts>
-inline void Print(T&& first, Ts&&... rest) {
-  // Print first
-  SinglePrint(std::forward<T>(first));
-  // Forward the rest.
-  Print(std::forward<Ts>(rest)...);
+inline void PrintToStream(std::ostream& os, T&& first, Ts&&... rest) {
+  SinglePrint(os, std::forward<T>(first));
+  PrintToStream(os, std::forward<Ts>(rest)...);
 }
 
 template<typename... Args>
 inline void PrintInfo(Args&&... args) {
   std::cout << "TETGENPY INFO - ";
-  Print(std::forward<Args>(args)...);
+  PrintToStream(std::cout, std::forward<Args>(args)...);
   std::cout << "\n";
 }
 
@@ -40,7 +32,7 @@ template<typename... Args>
 inline void PrintDebug(bool on, Args&&... args) {
   if (on) {
     std::cout << "TETGENPY DEBUG - ";
-    Print(std::forward<Args>(args)...);
+    PrintToStream(std::cout, std::forward<Args>(args)...);
     std::cout << "\n";
   }
 }
@@ -48,15 +40,16 @@ inline void PrintDebug(bool on, Args&&... args) {
 template<typename... Args>
 inline void PrintWarning(Args&&... args) {
   std::cout << "TETGENPY WARNING - ";
-  Print(std::forward<Args>(args)...);
+  PrintToStream(std::cout, std::forward<Args>(args)...);
   std::cout << "\n";
 }
 
 template<typename... Args>
 inline void PrintAndThrowError(Args&&... args) {
-  std::cout << "TETGENPY ERROR - ";
-  Print(std::forward<Args>(args)...);
-  std::cout << "\n";
-  throw std::runtime_error("Error Occurred! Abort the mission!");
+  std::ostringstream oss;
+  PrintToStream(oss, std::forward<Args>(args)...);
+  std::cout << "TETGENPY ERROR - " << oss.str() << "\n";
+  throw std::runtime_error("TETGENPY ERROR: " + oss.str());
 }
+
 } // namespace tetgenpy

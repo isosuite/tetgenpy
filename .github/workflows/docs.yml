@@ -17,11 +17,14 @@ jobs:
       with:
         python-version: "3.11"
 
+    - name: install test dependencies
+      run: pip install pytest numpy
+
     - name: build tetgenpy
-      run: pip install -e .
+      run: pip install .
 
     - name: test
-      run: python3 tests/test_tetgenpy.py
+      run: pytest tests
 
     - name: build docs
       run: |

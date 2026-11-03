@@ -1,57 +1,134 @@
 #pragma once
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include <tetgen.h>
 
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
 
 #include <tetgenpy/print.hpp>
 
 namespace tetgenpy {
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-template<typename ValueType>
-static bool CheckPyArrayShape(const py::array_t<ValueType> arr,
-                              const std::vector<int>& shape,
-                              const bool throw_ = true) {
-  const std::size_t expected_dim = shape.size();
-  if (expected_dim != static_cast<std::size_t>(arr.ndim())) {
-    if (!throw_)
-      return false;
-    PrintAndThrowError("Array dim mismatch.",
-                       "Expected -",
-                       expected_dim,
-                       "Given -",
-                       arr.ndim());
+/// std::string to null-terminated char vector
+inline std::vector<char> ToCStr(const std::string& str) {
+  std::vector<char> c(str.begin(), str.end());
+  c.push_back('\0');
+  return c;
+}
+
+template<typename T>
+class ArrayInput {
+public:
+  const T* data = nullptr;
+  std::vector<int64_t> shape;
+  size_t total_size = 0;
+  nb::object keep_alive;
+
+  bool empty() const { return total_size == 0; }
+
+  static ArrayInput from_object(nb::handle obj, const char* name = "array") {
+    ArrayInput result;
+    if (obj.is_none()) {
+      return result;
+    }
+
+    if (nb::isinstance<nb::list>(obj) || nb::isinstance<nb::tuple>(obj)) {
+      if (nb::len(obj) == 0) {
+        return result;
+      }
+      nb::object np = nb::module_::import_("numpy");
+      nb::object dtype_obj;
+      if constexpr (std::is_same_v<T, int>) {
+        dtype_obj = np.attr("int32");
+      } else if constexpr (std::is_same_v<T, double>) {
+        dtype_obj = np.attr("float64");
+      } else if constexpr (std::is_same_v<T, float>) {
+        dtype_obj = np.attr("float32");
+      }
+      nb::object arr = np.attr("ascontiguousarray")(obj, dtype_obj);
+      return from_ndarray(arr, name);
+    }
+
+    return from_ndarray(obj, name);
   }
-  const py::ssize_t* arrshape = arr.shape();
-  for (std::size_t i{}; i < expected_dim; ++i) {
-    const int& shape_i = shape[i];
-    if (shape_i < 0) {
-      continue;
-    } else {
-      if (shape_i != arrshape[i]) {
-        if (!throw_)
-          return false;
-        PrintAndThrowError("Array shape mismatch",
-                           "in dimension [",
+
+  static ArrayInput from_ndarray(nb::handle obj, const char* name = "array") {
+    ArrayInput result;
+    if (obj.is_none()) {
+      return result;
+    }
+
+    try {
+      nb::ndarray<const T, nb::c_contig, nb::device::cpu> arr =
+          nb::cast<nb::ndarray<const T, nb::c_contig, nb::device::cpu>>(obj);
+      result.total_size = arr.size();
+      if (result.total_size == 0) {
+        return result;
+      }
+      result.data = arr.data();
+      result.shape.resize(arr.ndim());
+      for (size_t i = 0; i < arr.ndim(); ++i) {
+        result.shape[i] = static_cast<int64_t>(arr.shape(i));
+      }
+      return result;
+    } catch (...) {
+      nb::object np = nb::module_::import_("numpy");
+      nb::object dtype_obj;
+      if constexpr (std::is_same_v<T, int>) {
+        dtype_obj = np.attr("int32");
+      } else if constexpr (std::is_same_v<T, double>) {
+        dtype_obj = np.attr("float64");
+      } else if constexpr (std::is_same_v<T, float>) {
+        dtype_obj = np.attr("float32");
+      }
+      nb::object arr = np.attr("ascontiguousarray")(obj, dtype_obj);
+      nb::ndarray<const T, nb::c_contig, nb::device::cpu> casted =
+          nb::cast<nb::ndarray<const T, nb::c_contig, nb::device::cpu>>(arr);
+      result.keep_alive = arr;
+      result.total_size = casted.size();
+      if (result.total_size == 0) {
+        return result;
+      }
+      result.data = casted.data();
+      result.shape.resize(casted.ndim());
+      for (size_t i = 0; i < casted.ndim(); ++i) {
+        result.shape[i] = static_cast<int64_t>(casted.shape(i));
+      }
+      return result;
+    }
+  }
+
+  void check_shape(const std::vector<int>& expected_shape,
+                   const char* name = "Array") const {
+    const size_t expected_dim = expected_shape.size();
+    if (expected_dim != shape.size()) {
+      PrintAndThrowError(name,
+                         " dim mismatch. Expected -",
+                         expected_dim,
+                         " Given -",
+                         shape.size());
+    }
+    for (size_t i = 0; i < expected_dim; ++i) {
+      if (expected_shape[i] >= 0 && shape[i] != expected_shape[i]) {
+        PrintAndThrowError(name,
+                           " shape mismatch in dimension [",
                            i,
-                           "].",
-                           "Expected -",
-                           shape_i,
-                           "Given -",
-                           arrshape[i]);
+                           "]. Expected -",
+                           expected_shape[i],
+                           " Given -",
+                           shape[i]);
       }
     }
   }
-  return true;
-}
-
-/// std::string to char*
-inline char* ToCharPtr(std::string& str_in) { return &str_in.front(); }
+};
 
 class PyTetgenIo : public tetgenio {
 protected:
@@ -85,16 +162,16 @@ public:
 
   // default ctor initializes. dtor clears.
   PyTetgenIo() { Base_::initialize(); }
-  PyTetgenIo(py::array_t<REAL> points,
-             py::list facets,
-             py::array_t<REAL> point_attributes,
-             py::array_t<REAL> point_metrics,
-             py::array_t<int> facet_markers,
-             py::list h_facets,
-             py::array_t<REAL> holes,
-             py::array_t<REAL> regions,
-             py::array_t<REAL> facet_constraints,
-             py::array_t<REAL> segment_constraints,
+  PyTetgenIo(nb::handle points,
+             nb::list facets,
+             nb::handle point_attributes = nb::none(),
+             nb::handle point_metrics = nb::none(),
+             nb::handle facet_markers = nb::none(),
+             nb::list h_facets = nb::list(),
+             nb::handle holes = nb::none(),
+             nb::handle regions = nb::none(),
+             nb::handle facet_constraints = nb::none(),
+             nb::handle segment_constraints = nb::none(),
              bool debug = false) {
     Base_::initialize();
     SetupPlc(points,
@@ -119,113 +196,77 @@ public:
     }
   }
 
-  void SetupPoints(py::array_t<REAL> points,
-                   py::array_t<REAL> point_attributes,
-                   py::array_t<REAL> point_metrics,
-                   bool debug) {
+  void SetupPoints(nb::handle points,
+                   nb::handle point_attributes = nb::none(),
+                   nb::handle point_metrics = nb::none(),
+                   bool debug = false) {
 
     ClearPreviousSet();
     set_called_ = true;
 
     PrintDebug(debug, "Starting PyTetgenIo::SetupPoints");
 
-    /* numberofpoints, pointlist */
-    // points shape test - 3D!
-    CheckPyArrayShape(points, {-1, dim_});
+    auto pts = ArrayInput<REAL>::from_object(points, "points");
+    pts.check_shape({-1, dim_}, "points");
 
-    Base_::numberofpoints = static_cast<int>(points.shape(0));
+    Base_::numberofpoints = static_cast<int>(pts.shape[0]);
     PrintDebug(debug, "set numberofpoints:", Base_::numberofpoints);
 
     Base_::pointlist = new REAL[Base_::numberofpoints * dim_];
-    std::copy_n(static_cast<REAL*>(points.request().ptr),
-                Base_::numberofpoints * dim_,
-                Base_::pointlist);
+    std::copy_n(pts.data, Base_::numberofpoints * dim_, Base_::pointlist);
     PrintDebug(debug, "set pointlist.");
 
-    /* numberofpointattributes, pointattributelist */
-    const int point_attributes_size = static_cast<int>(point_attributes.size());
-    if (point_attributes_size > 0) {
-      CheckPyArrayShape(point_attributes, {Base_::numberofpoints, -1});
+    auto p_attrs =
+        ArrayInput<REAL>::from_object(point_attributes, "point_attributes");
+    if (!p_attrs.empty()) {
+      p_attrs.check_shape({Base_::numberofpoints, -1}, "point_attributes");
 
-      Base_::numberofpointattributes =
-          static_cast<int>(point_attributes.shape(1));
+      Base_::numberofpointattributes = static_cast<int>(p_attrs.shape[1]);
       PrintDebug(debug,
                  "set numberofpointattributes:",
                  Base_::numberofpointattributes);
 
-      Base_::pointattributelist = new REAL[point_attributes_size];
-      std::copy_n(static_cast<REAL*>(points.request().ptr),
-                  point_attributes_size,
-                  Base_::pointattributelist);
+      Base_::pointattributelist = new REAL[p_attrs.total_size];
+      std::copy_n(p_attrs.data, p_attrs.total_size, Base_::pointattributelist);
       PrintDebug(debug, "set pointattributelist");
     }
 
-    /* numberofpointmtrs, pointmtrlist */
-    const int point_metrics_size = static_cast<int>(point_metrics.size());
-    if (point_metrics_size > 0) {
-      CheckPyArrayShape(point_metrics,
-                        {Base_::numberofpoints, n_point_metrics_});
+    auto p_mtrs = ArrayInput<REAL>::from_object(point_metrics, "point_metrics");
+    if (!p_mtrs.empty()) {
+      p_mtrs.check_shape({Base_::numberofpoints, n_point_metrics_},
+                         "point_metrics");
 
       Base_::numberofpointmtrs = n_point_metrics_;
       PrintDebug(debug, "set numberofpointmtrs");
 
-      Base_::pointmtrlist = new REAL[point_metrics_size];
-      std::copy_n(static_cast<REAL*>(point_metrics.request().ptr),
-                  point_metrics_size,
-                  Base_::pointmtrlist);
+      Base_::pointmtrlist = new REAL[p_mtrs.total_size];
+      std::copy_n(p_mtrs.data, p_mtrs.total_size, Base_::pointmtrlist);
       PrintDebug(debug, "set pointmtrlist");
     }
   }
 
-  /// load full set of input
-  /// split input facets into 2 types:
-  ///   1) facets without a hole
-  ///   2) facets with holes (we will refer to this as h_facet)
-  ///
-  /// points: (a, 3) np.ndarray
-  ///   all points that appear for tetgen query
-  /// point_attributes: (a, n) np.ndarray
-  ///   attributes for each points. with "-w" switch, first attribute will be
-  ///   used as weights for weighted DT
-  /// point_metrics: (a, 1) np.ndarray
-  ///   sizing function defined at nodes. "-m" switch. Can have zero entries
-  ///   for points where you don't want to apply any sizing function.
-  /// facets: list
-  ///   coplanar single polygons
-  /// facet_markers: (len(facets),) np.ndarray
-  ///   facet marker. If this facet is at boundary, this will be boundary id.
-  ///   len(facet_markers) == len(facets) should hold
-  /// h_facets: list
-  ///   nested list for self contained facet description with holes list,
-  ///   as well as marker.
-  ///   [list of h_facet polygons, list of holes, facet marker]
-  /// holes: (b, 3) np.ndarray
-  ///   list of holes. this pokes holes.
-  /// regions: (c, 5) np.ndarray
-  ///   list of regions.
-  ///   coordinate to mark the region, region attribute, max volume
-  void SetupPlc(py::array_t<REAL> points,
-                py::list facets,
-                py::array_t<REAL> point_attributes,
-                py::array_t<REAL> point_metrics,
-                py::array_t<int> facet_markers,
-                py::list h_facets,
-                py::array_t<REAL> holes,
-                py::array_t<REAL> regions,
-                py::array_t<REAL> facet_constraints,
-                py::array_t<REAL> segment_constraints,
+  void SetupPlc(nb::handle points,
+                nb::list facets,
+                nb::handle point_attributes = nb::none(),
+                nb::handle point_metrics = nb::none(),
+                nb::handle facet_markers = nb::none(),
+                nb::list h_facets = nb::list(),
+                nb::handle holes = nb::none(),
+                nb::handle regions = nb::none(),
+                nb::handle facet_constraints = nb::none(),
+                nb::handle segment_constraints = nb::none(),
                 bool debug = false) {
 
     PrintDebug(debug, "Starting PyTetgenIo::SetupPlc");
-    // this call clears tetgenio
     SetupPoints(points, point_attributes, point_metrics, debug);
 
-    // define some constants
     const int n_polygon_per_facet{1};
 
-    /* numberoffacets, facetlist, facetmarkerlist */
     const int n_facets = static_cast<int>(facets.size());
-    const int n_facet_markers = static_cast<int>(facet_markers.size());
+    auto f_markers =
+        ArrayInput<int>::from_object(facet_markers, "facet_markers");
+    const int n_facet_markers =
+        f_markers.empty() ? 0 : static_cast<int>(f_markers.total_size);
     const int n_h_facets = static_cast<int>(h_facets.size());
     Base_::numberoffacets = n_facets + n_h_facets;
     if (Base_::numberoffacets > 0) {
@@ -235,8 +276,6 @@ public:
     PrintDebug(debug, "-> number of regular facets:", n_facets);
     PrintDebug(debug, "-> number of facets with holes:", n_h_facets);
 
-    // following sizes should match
-    // facet markers for h_facets will be added later
     if (n_facet_markers != 0 && n_facets != n_facet_markers) {
       PrintAndThrowError("facets and facet_markers should have same size.",
                          "facets:",
@@ -245,322 +284,273 @@ public:
                          n_facet_markers);
     }
 
-    // loop and fillout facets
-    // pointers for easy handling of raw ptr elements
     Base_::facet* f;
     Base_::polygon* p;
     for (int i{}; i < n_facets; ++i) {
+      nb::sequence polygon_connec = nb::cast<nb::sequence>(facets[i]);
 
-      // TODO does this work without any issue? else, try
-      // reinterpret_steal
-      const auto polygon_connec = facets[i].cast<py::list>();
-
-      // get facet and init
       f = &Base_::facetlist[i];
       Base_::init(f);
 
-      // fill polygon
       f->numberofpolygons = n_polygon_per_facet;
       f->polygonlist = new Base_::polygon[n_polygon_per_facet];
-      p = &f->polygonlist[0]; // n_polygon_per_facet is 1
+      p = &f->polygonlist[0];
       Base_::init(p);
-      const int n_polygon_vertices = static_cast<int>(polygon_connec.size());
+      const int n_polygon_vertices = static_cast<int>(nb::len(polygon_connec));
       p->numberofvertices = n_polygon_vertices;
       p->vertexlist = new int[n_polygon_vertices];
 
       int j{};
-      for (py::handle vertex_id : polygon_connec) {
-        p->vertexlist[j] = vertex_id.cast<int>();
+      for (nb::handle vertex_id : polygon_connec) {
+        p->vertexlist[j] = nb::cast<int>(vertex_id);
         ++j;
       }
     }
     PrintDebug(debug, "set facetlist.");
 
-    // set facet markers. could put it to the loop above,
-    // but maybe not everyone needs this
-    if (n_facet_markers != 0) {
-      Base_::facetmarkerlist = new int[Base_::numberoffacets];
-      std::copy_n(static_cast<int*>(facet_markers.request().ptr),
-                  // Base_::numberoffacets, //
-                  n_facets, //
-                  Base_::facetmarkerlist);
+    if (n_facet_markers != 0 || n_h_facets > 0) {
+      Base_::facetmarkerlist = new int[Base_::numberoffacets]();
+      if (n_facet_markers != 0) {
+        std::copy_n(f_markers.data, n_facets, Base_::facetmarkerlist);
+      }
       PrintDebug(debug, "set facetmarkerlist for facets.");
     }
 
-    // fill h_facets
-    int h{n_facets}; // hfacet counter
-    for (py::handle hf : h_facets) {
-      // index hints
-      // 0. -> list of list (polygons; int)
-      // 1. -> list of list (holes; double)
-      // 2. -> facet marker (;int)
-      const auto hf_description = hf.cast<py::list>();
-      const auto list_of_polygons = hf_description[0].cast<py::list>();
-      const auto list_of_holes = hf_description[1].cast<py::list>();
-      const int facet_mark = hf_description[2].cast<int>();
+    int h{n_facets};
+    for (nb::handle hf : h_facets) {
+      nb::sequence hf_description = nb::cast<nb::sequence>(hf);
+      nb::sequence list_of_polygons = nb::cast<nb::sequence>(hf_description[0]);
+      nb::handle holes_handle = hf_description[1];
+      int facet_mark = nb::cast<int>(hf_description[2]);
 
       f = &Base_::facetlist[h];
       Base_::init(f);
 
-      const int n_poly_per_hf = static_cast<int>(list_of_polygons.size());
+      const int n_poly_per_hf = static_cast<int>(nb::len(list_of_polygons));
       f->numberofpolygons = n_poly_per_hf;
       f->polygonlist = new Base_::polygon[n_poly_per_hf];
 
-      // 0
-      int i{}; // polygon counter
-      for (py::handle poly : list_of_polygons) {
+      int i{};
+      for (nb::handle poly : list_of_polygons) {
         p = &f->polygonlist[i];
         Base_::init(p);
-        const auto poly_vertexlist = poly.cast<py::list>();
+        nb::sequence poly_vertexlist = nb::cast<nb::sequence>(poly);
         const int n_vertices_per_poly =
-            static_cast<int>(poly_vertexlist.size());
+            static_cast<int>(nb::len(poly_vertexlist));
         p->numberofvertices = n_vertices_per_poly;
         p->vertexlist = new int[n_vertices_per_poly];
 
-        // fill vertices
         int j{};
-        for (py::handle vertex_id : poly_vertexlist) {
-          p->vertexlist[j] = vertex_id.cast<int>();
+        for (nb::handle vertex_id : poly_vertexlist) {
+          p->vertexlist[j] = nb::cast<int>(vertex_id);
           ++j;
         }
         ++i;
       }
 
-      // 1
-      const int n_hf_holes = static_cast<int>(list_of_holes.size());
-      if (n_hf_holes > 0) {
+      auto hf_holes_buf =
+          ArrayInput<REAL>::from_object(holes_handle, "h_facet holes");
+      if (!hf_holes_buf.empty()) {
+        hf_holes_buf.check_shape({-1, dim_}, "h_facet holes");
+        const int n_hf_holes = static_cast<int>(hf_holes_buf.shape[0]);
         f->numberofholes = n_hf_holes;
         f->holelist = new REAL[n_hf_holes * dim_];
-        i = 0;
-        for (py::handle hole : list_of_holes) {
-          // this needs to have len 3
-          int j{};
-          const auto hole_coord = hole.cast<py::list>();
-          if (hole_coord.size() != 3) {
-            PrintAndThrowError("h_facet holes must be 3D coordinates.",
-                               "Given hole has the size of (",
-                               hole_coord.size(),
-                               ")");
-          }
-          for (py::handle coord : hole) {
-            f->holelist[i * dim_ + j] = coord.cast<REAL>();
-            ++j;
-          }
-          ++i;
-        }
+        std::copy_n(hf_holes_buf.data, n_hf_holes * dim_, f->holelist);
       }
 
-      // 2
       Base_::facetmarkerlist[h] = facet_mark;
-
-      // next h_facet
       ++h;
     }
 
-    /* numberofholes, holelist */
-    const int holes_size = static_cast<int>(holes.size());
-    if (holes_size > 0) {
-      PrintDebug(debug, "setting  holes.");
-      // shape check
-      CheckPyArrayShape(holes, {-1, dim_});
+    auto holes_buf = ArrayInput<REAL>::from_object(holes, "holes");
+    if (!holes_buf.empty()) {
+      PrintDebug(debug, "setting holes.");
+      holes_buf.check_shape({-1, dim_}, "holes");
 
-      Base_::numberofholes = holes_size / dim_;
+      Base_::numberofholes = static_cast<int>(holes_buf.shape[0]);
       PrintDebug(debug, "->", Base_::numberofholes, "holes.");
-      Base_::holelist = new REAL[holes_size];
-      std::copy_n(static_cast<REAL*>(holes.request().ptr),
-                  holes_size,
-                  Base_::holelist);
+      Base_::holelist = new REAL[holes_buf.total_size];
+      std::copy_n(holes_buf.data, holes_buf.total_size, Base_::holelist);
     }
 
-    /* numberofregions, regionlist */
-    const int regions_size = static_cast<int>(regions.size());
-    if (regions_size > 0) {
+    auto regions_buf = ArrayInput<REAL>::from_object(regions, "regions");
+    if (!regions_buf.empty()) {
       PrintDebug(debug, "setting regions.");
-      // shape check
-      CheckPyArrayShape(regions, {-1, n_region_entries_});
+      regions_buf.check_shape({-1, n_region_entries_}, "regions");
 
-      Base_::numberofregions = regions_size / n_region_entries_;
+      Base_::numberofregions = static_cast<int>(regions_buf.shape[0]);
       PrintDebug(debug, "->", Base_::numberofregions, "regions.");
-      Base_::regionlist = new REAL[regions_size];
-      std::copy_n(static_cast<REAL*>(regions.request().ptr),
-                  regions_size,
-                  Base_::regionlist);
+      Base_::regionlist = new REAL[regions_buf.total_size];
+      std::copy_n(regions_buf.data, regions_buf.total_size, Base_::regionlist);
     }
 
-    /* numberoffacetconstraints, facetconstaintlist */
-    const int f_constraints_size = static_cast<int>(facet_constraints.size());
-    if (f_constraints_size > 0) {
+    auto f_constraints_buf =
+        ArrayInput<REAL>::from_object(facet_constraints, "facet_constraints");
+    if (!f_constraints_buf.empty()) {
       PrintDebug(debug, "setting facet constraints.");
-
-      CheckPyArrayShape(facet_constraints, {-1, n_facet_constraint_entries_});
+      f_constraints_buf.check_shape({-1, n_facet_constraint_entries_},
+                                    "facet_constraints");
       Base_::numberoffacetconstraints =
-          f_constraints_size / n_facet_constraint_entries_;
+          static_cast<int>(f_constraints_buf.shape[0]);
       PrintDebug(debug,
                  "-> set (",
                  Base_::numberoffacetconstraints,
                  ") numberoffacetconstraints.");
 
-      Base_::facetconstraintlist = new REAL[f_constraints_size];
-      std::copy_n(static_cast<REAL*>(facet_constraints.request().ptr),
-                  f_constraints_size,
+      Base_::facetconstraintlist = new REAL[f_constraints_buf.total_size];
+      std::copy_n(f_constraints_buf.data,
+                  f_constraints_buf.total_size,
                   Base_::facetconstraintlist);
       PrintDebug(debug, "-> set facetconstraintlist.");
     }
 
-    /* numberofsegmentconstraints, segmentconstraintlist */
-    const int s_constraints_size = static_cast<int>(segment_constraints.size());
-    if (s_constraints_size > 0) {
+    auto s_constraints_buf =
+        ArrayInput<REAL>::from_object(segment_constraints,
+                                      "segment_constraints");
+    if (!s_constraints_buf.empty()) {
       PrintDebug(debug, "setting segment constraints.");
-
-      CheckPyArrayShape(segment_constraints,
-                        {-1, n_segment_constraint_entries_});
+      s_constraints_buf.check_shape({-1, n_segment_constraint_entries_},
+                                    "segment_constraints");
       Base_::numberofsegmentconstraints =
-          s_constraints_size / n_segment_constraint_entries_;
+          static_cast<int>(s_constraints_buf.shape[0]);
       PrintDebug(debug,
                  "-> set (",
                  Base_::numberofsegmentconstraints,
                  ") numberofsegmentconstraints.");
 
-      Base_::segmentconstraintlist = new REAL[s_constraints_size];
-      std::copy_n(static_cast<REAL*>(segment_constraints.request().ptr),
-                  s_constraints_size,
+      Base_::segmentconstraintlist = new REAL[s_constraints_buf.total_size];
+      std::copy_n(s_constraints_buf.data,
+                  s_constraints_buf.total_size,
                   Base_::segmentconstraintlist);
       PrintDebug(debug, "-> set segmentconstraintlist");
     }
   }
 
-  /// Setup Existing TetMesh, perhaps to refine, perhaps to coarsen,
-  /// perhaps as a background mesh.
-  void SetupTetMesh(py::array_t<REAL> points,
-                    py::array_t<int> tetrahedra, // (n, 4)
-                    py::array_t<REAL> point_attributes,
-                    py::array_t<REAL> point_metrics,
-                    py::array_t<REAL> tetrahedron_attributes,
-                    py::array_t<REAL> tetrahedron_constraints, // tetvolumelist
-                    py::array_t<int> refine_elements,          // (n, 4)
-                    py::array_t<REAL> refine_element_constraints, // (n, 1)
-                    py::array_t<int> trifaces,
-                    py::array_t<int> triface_markers,
-                    py::array_t<int> edges,
-                    py::array_t<int> edge_markers,
-                    bool debug) {
+  void SetupTetMesh(nb::handle points,
+                    nb::handle tetrahedra,
+                    nb::handle point_attributes = nb::none(),
+                    nb::handle point_metrics = nb::none(),
+                    nb::handle tetrahedron_attributes = nb::none(),
+                    nb::handle tetrahedron_constraints = nb::none(),
+                    nb::handle refine_elements = nb::none(),
+                    nb::handle refine_element_constraints = nb::none(),
+                    nb::handle trifaces = nb::none(),
+                    nb::handle triface_markers = nb::none(),
+                    nb::handle edges = nb::none(),
+                    nb::handle edge_markers = nb::none(),
+                    bool debug = false) {
     PrintDebug(debug, "Starting PyTetgenIo::SetupTetMesh");
-    // this call clears tetgenio
     SetupPoints(points, point_attributes, point_metrics, debug);
 
-    /* tetrahedronlist, numberoftetrahdra */
-    // for input, only take linear tets
-    CheckPyArrayShape(tetrahedra, {-1, n_input_tet_corners_});
+    auto tets_buf = ArrayInput<int>::from_object(tetrahedra, "tetrahedra");
+    tets_buf.check_shape({-1, n_input_tet_corners_}, "tetrahedra");
 
-    Base_::numberoftetrahedra = static_cast<int>(tetrahedra.shape(0));
+    Base_::numberoftetrahedra = static_cast<int>(tets_buf.shape[0]);
     PrintDebug(debug, "set numberoftetrahedra:", Base_::numberoftetrahedra);
 
-    const int tetlist_size = Base_::numberoftetrahedra * n_input_tet_corners_;
-    Base_::tetrahedronlist = new int[tetlist_size];
-    std::copy_n(static_cast<int*>(tetrahedra.request().ptr),
-                tetlist_size,
-                Base_::tetrahedronlist);
+    Base_::tetrahedronlist = new int[tets_buf.total_size];
+    std::copy_n(tets_buf.data, tets_buf.total_size, Base_::tetrahedronlist);
     PrintDebug(debug, "set tetrahedronlist.");
 
-    /* tetrahedronattributelist, numberoftetrahedronattributes */
-    const int tet_attr_size = static_cast<int>(tetrahedron_attributes.size());
-    if (tet_attr_size > 0) {
-      // just needs to be 2D
-      CheckPyArrayShape(tetrahedron_attributes,
-                        {Base_::numberoftetrahedra, -1});
+    auto tet_attrs = ArrayInput<REAL>::from_object(tetrahedron_attributes,
+                                                   "tetrahedron_attributes");
+    if (!tet_attrs.empty()) {
+      tet_attrs.check_shape({Base_::numberoftetrahedra, -1},
+                            "tetrahedron_attributes");
 
       Base_::numberoftetrahedronattributes =
-          static_cast<int>(tetrahedron_attributes.shape(1));
+          static_cast<int>(tet_attrs.shape[1]);
       PrintDebug(debug,
                  "set numberoftetrahedronattributes:",
                  Base_::numberoftetrahedronattributes);
 
-      Base_::tetrahedronattributelist = new REAL[tet_attr_size];
-      std::copy_n(static_cast<REAL*>(tetrahedron_attributes.request().ptr),
-                  tet_attr_size,
+      Base_::tetrahedronattributelist = new REAL[tet_attrs.total_size];
+      std::copy_n(tet_attrs.data,
+                  tet_attrs.total_size,
                   Base_::tetrahedronattributelist);
       PrintDebug(debug, "set tetrahedronattributelist.");
     }
 
-    /* tetrahedronvolumelist */
-    const int tet_vol_size = static_cast<int>(tetrahedron_constraints.size());
-    if (tet_vol_size > 0) {
-      CheckPyArrayShape(tetrahedron_constraints,
-                        {Base_::numberoftetrahedra, 1});
+    auto tet_vols = ArrayInput<REAL>::from_object(tetrahedron_constraints,
+                                                  "tetrahedron_constraints");
+    if (!tet_vols.empty()) {
+      tet_vols.check_shape({Base_::numberoftetrahedra, 1},
+                           "tetrahedron_constraints");
 
-      Base_::tetrahedronvolumelist = new REAL[tet_vol_size];
-      std::copy_n(static_cast<REAL*>(tetrahedron_constraints.request().ptr),
-                  tet_vol_size,
+      Base_::tetrahedronvolumelist = new REAL[tet_vols.total_size];
+      std::copy_n(tet_vols.data,
+                  tet_vols.total_size,
                   Base_::tetrahedronvolumelist);
       PrintDebug(debug, "set tetrahedronvolumelist.");
     }
 
-    /* refine_elem_list, refine_elem_vol_list, numberofrefineelems */
-    const int refine_elem_size = static_cast<int>(refine_elements.size());
-    if (refine_elem_size > 0) {
-      // size check
-      CheckPyArrayShape(refine_elements, {-1, n_input_tet_corners_});
-      Base_::numberofrefineelems = static_cast<int>(refine_elements.shape(0));
+    auto ref_elems =
+        ArrayInput<int>::from_object(refine_elements, "refine_elements");
+    if (!ref_elems.empty()) {
+      ref_elems.check_shape({-1, n_input_tet_corners_}, "refine_elements");
+      Base_::numberofrefineelems = static_cast<int>(ref_elems.shape[0]);
       PrintDebug(debug, "set numberofrefineelems:", Base_::numberofrefineelems);
 
-      CheckPyArrayShape(refine_element_constraints,
-                        {Base_::numberofrefineelems, 1});
-      Base_::refine_elem_list = new int[refine_elem_size];
-      std::copy_n(static_cast<int*>(refine_elements.request().ptr),
-                  refine_elem_size,
+      auto ref_vols =
+          ArrayInput<REAL>::from_object(refine_element_constraints,
+                                        "refine_element_constraints");
+      ref_vols.check_shape({Base_::numberofrefineelems, 1},
+                           "refine_element_constraints");
+
+      Base_::refine_elem_list = new int[ref_elems.total_size];
+      std::copy_n(ref_elems.data,
+                  ref_elems.total_size,
                   Base_::refine_elem_list);
       PrintDebug(debug, "set refine_elem_list.");
 
-      Base_::refine_elem_vol_list = new REAL[refine_elem_size];
-      std::copy_n(static_cast<REAL*>(refine_element_constraints.request().ptr),
+      Base_::refine_elem_vol_list = new REAL[Base_::numberofrefineelems];
+      std::copy_n(ref_vols.data,
                   Base_::numberofrefineelems,
                   Base_::refine_elem_vol_list);
       PrintDebug(debug, "set refine_elem_vol_list.");
     }
 
-    /* trifacelist, trifacemarkerlist, numberoftrifaces */
-    const int trifaces_size = static_cast<int>(trifaces.size());
-    if (trifaces_size > 0) {
-      CheckPyArrayShape(trifaces, {-1, n_triface_corners_});
-      Base_::numberoftrifaces = static_cast<int>(trifaces.shape(0));
+    auto trifaces_buf = ArrayInput<int>::from_object(trifaces, "trifaces");
+    if (!trifaces_buf.empty()) {
+      trifaces_buf.check_shape({-1, n_triface_corners_}, "trifaces");
+      Base_::numberoftrifaces = static_cast<int>(trifaces_buf.shape[0]);
       PrintDebug(debug, "set numberoftrifaces:", Base_::numberoftrifaces);
-      Base_::trifacelist = new int[trifaces_size];
-      std::copy_n(static_cast<int*>(trifaces.request().ptr),
-                  trifaces_size,
+      Base_::trifacelist = new int[trifaces_buf.total_size];
+      std::copy_n(trifaces_buf.data,
+                  trifaces_buf.total_size,
                   Base_::trifacelist);
       PrintDebug(debug, "set trifacelist.");
 
-      const int triface_markers_size = static_cast<int>(triface_markers.size());
-      if (triface_markers_size > 0) {
-        CheckPyArrayShape(triface_markers, {Base_::numberoftrifaces, 1});
-        Base_::trifacemarkerlist = new int[triface_markers_size];
-        std::copy_n(static_cast<int*>(triface_markers.request().ptr),
-                    triface_markers_size,
+      auto tf_markers =
+          ArrayInput<int>::from_object(triface_markers, "triface_markers");
+      if (!tf_markers.empty()) {
+        tf_markers.check_shape({Base_::numberoftrifaces, 1}, "triface_markers");
+        Base_::trifacemarkerlist = new int[tf_markers.total_size];
+        std::copy_n(tf_markers.data,
+                    tf_markers.total_size,
                     Base_::trifacemarkerlist);
         PrintDebug(debug, "set trifacemarkerlist.");
       }
     }
 
-    /* edgelist, edgemarkerlist, numberofedges */
-    const int edges_size = static_cast<int>(edges.size());
-    if (edges_size > 0) {
-      CheckPyArrayShape(edges, {-1, n_edge_corners_});
-      Base_::numberofedges = static_cast<int>(edges.shape(0));
+    auto edges_buf = ArrayInput<int>::from_object(edges, "edges");
+    if (!edges_buf.empty()) {
+      edges_buf.check_shape({-1, n_edge_corners_}, "edges");
+      Base_::numberofedges = static_cast<int>(edges_buf.shape[0]);
       PrintDebug(debug, "set numberofedges:", Base_::numberofedges);
 
-      Base_::edgelist = new int[edges_size];
-      std::copy_n(static_cast<int*>(edges.request().ptr),
-                  edges_size,
-                  Base_::edgelist);
+      Base_::edgelist = new int[edges_buf.total_size];
+      std::copy_n(edges_buf.data, edges_buf.total_size, Base_::edgelist);
       PrintDebug(debug, "set edgelist.");
 
-      const int edge_markers_size = static_cast<int>(edge_markers.size());
-      if (edge_markers_size > 0) {
-        CheckPyArrayShape(edge_markers, {Base_::numberofedges, 1});
+      auto e_markers =
+          ArrayInput<int>::from_object(edge_markers, "edge_markers");
+      if (!e_markers.empty()) {
+        e_markers.check_shape({Base_::numberofedges, 1}, "edge_markers");
 
-        Base_::edgemarkerlist = new int[edge_markers_size];
-        std::copy_n(static_cast<int*>(edge_markers.request().ptr),
-                    edge_markers_size,
+        Base_::edgemarkerlist = new int[e_markers.total_size];
+        std::copy_n(e_markers.data,
+                    e_markers.total_size,
                     Base_::edgemarkerlist);
         PrintDebug(debug, "set edgemarkerlist");
       }
@@ -569,136 +559,142 @@ public:
 
   /* getters */
   template<typename DataType>
-  py::array_t<DataType> CopyFromBase(const int base_data_count,
-                                     const int base_data_stride,
-                                     const DataType* base_array_ptr) {
+  nb::ndarray<nb::numpy, DataType>
+  CopyFromBase(const int base_data_count,
+               const int base_data_stride,
+               const DataType* base_array_ptr) {
 
-    // return if zero
-    if (base_data_count == 0 || base_array_ptr == (DataType*) NULL) {
-      return py::array_t<DataType>(0);
+    if (base_data_count <= 0 || base_array_ptr == nullptr
+        || base_data_stride <= 0) {
+      DataType* dummy = new DataType[1]();
+      nb::capsule owner(dummy, [](void* p) noexcept {
+        delete[] static_cast<DataType*>(p);
+      });
+      size_t shape[2] = {0, static_cast<size_t>(std::max(0, base_data_stride))};
+      return nb::ndarray<nb::numpy, DataType>(dummy, 2, shape, owner);
     }
 
-    const int base_array_len = base_data_count * base_data_stride;
-    py::array_t<DataType> output_array({base_data_count, base_data_stride});
-    std::copy_n(base_array_ptr,
-                base_array_len,
-                static_cast<DataType*>(output_array.request().ptr));
+    const size_t total_len = static_cast<size_t>(base_data_count)
+                             * static_cast<size_t>(base_data_stride);
+    DataType* data = new DataType[total_len];
+    std::copy_n(base_array_ptr, total_len, data);
 
-    return output_array;
+    nb::capsule owner(data, [](void* p) noexcept {
+      delete[] static_cast<DataType*>(p);
+    });
+
+    size_t shape[2] = {static_cast<size_t>(base_data_count),
+                       static_cast<size_t>(base_data_stride)};
+    return nb::ndarray<nb::numpy, DataType>(data, 2, shape, owner);
   }
 
-  // I / O
-  py::array_t<REAL> GetPoints() {
+  nb::ndarray<nb::numpy, REAL> GetPoints() {
     return CopyFromBase(Base_::numberofpoints, dim_, Base_::pointlist);
   }
 
-  // I - only for refinement / O
-  py::array_t<int> GetTetrahedra() {
+  nb::ndarray<nb::numpy, REAL> GetPointAttributes() {
+    return CopyFromBase(Base_::numberofpoints,
+                        Base_::numberofpointattributes,
+                        Base_::pointattributelist);
+  }
+
+  nb::ndarray<nb::numpy, int> GetTetrahedra() {
     return CopyFromBase(Base_::numberoftetrahedra,
                         Base_::numberofcorners,
                         Base_::tetrahedronlist);
   }
 
-  // I - only for refinement / O
-  py::array_t<int> GetTetrahedronAttributes() {
+  nb::ndarray<nb::numpy, REAL> GetTetrahedronAttributes() {
     return CopyFromBase(Base_::numberoftetrahedra,
                         Base_::numberoftetrahedronattributes,
                         Base_::tetrahedronattributelist);
   }
 
-  // I - for refinement / O
-  py::array_t<int> GetTriFaces() {
+  nb::ndarray<nb::numpy, int> GetTriFaces() {
     return CopyFromBase(Base_::numberoftrifaces,
                         n_triface_corners_,
                         Base_::trifacelist);
   }
 
-  py::array_t<int> GetTriFaceMarkers() {
+  nb::ndarray<nb::numpy, int> GetTriFaceMarkers() {
     return CopyFromBase(Base_::numberoftrifaces, 1, Base_::trifacemarkerlist);
   }
 
-  py::array_t<int> GetO2Faces() {
+  nb::ndarray<nb::numpy, int> GetO2Faces() {
     return CopyFromBase(Base_::numberoftrifaces,
                         n_triface_additional_second_order_nodes_,
                         Base_::o2facelist);
   }
 
-  py::array_t<int> GetNeighbors() {
+  nb::ndarray<nb::numpy, int> GetNeighbors() {
     return CopyFromBase(Base_::numberoftetrahedra,
                         n_tet_neighbors_,
                         Base_::neighborlist);
   }
 
-  py::array_t<int> GetTet2Faces() {
+  nb::ndarray<nb::numpy, int> GetTet2Faces() {
     return CopyFromBase(Base_::numberoftetrahedra,
                         n_faces_per_tet_,
                         Base_::tet2facelist);
   }
 
-  py::array_t<int> GetTet2Edges() {
+  nb::ndarray<nb::numpy, int> GetTet2Edges() {
     return CopyFromBase(Base_::numberoftetrahedra,
                         n_edges_per_tet_,
                         Base_::tet2edgelist);
   }
 
-  py::array_t<int> GetFace2Tets() {
+  nb::ndarray<nb::numpy, int> GetFace2Tets() {
     return CopyFromBase(Base_::numberoftrifaces,
                         n_tet_neighbors_per_face_,
                         Base_::face2tetlist);
   }
 
-  py::array_t<int> GetFace2Edges() {
+  nb::ndarray<nb::numpy, int> GetFace2Edges() {
     return CopyFromBase(Base_::numberoftrifaces,
                         n_edges_per_face_,
                         Base_::face2edgelist);
   }
 
-  py::array_t<int> GetEdges() {
+  nb::ndarray<nb::numpy, int> GetEdges() {
     return CopyFromBase(Base_::numberofedges, n_edge_corners_, Base_::edgelist);
   }
 
-  py::array_t<int> GetEdgeMarkers() {
+  nb::ndarray<nb::numpy, int> GetEdgeMarkers() {
     return CopyFromBase(Base_::numberofedges, 1, Base_::edgemarkerlist);
   }
 
-  py::array_t<int> GetO2Edges() {
+  nb::ndarray<nb::numpy, int> GetO2Edges() {
     return CopyFromBase(Base_::numberofedges,
                         n_edge_additional_second_order_nodes_,
                         Base_::o2edgelist);
   }
 
-  py::array_t<int> GetEdge2Tets() {
+  nb::ndarray<nb::numpy, int> GetEdge2Tets() {
     return CopyFromBase(Base_::numberofedges,
                         n_tet_per_edge_,
                         Base_::edge2tetlist);
   }
 
-  // Voronoi point, edges, facets, cells.
-  // currently tetgen.cxx does not parse "v" switch, thus only available with
-  // tetgenbehavior
-  py::dict GetVoronoi() {
-    //
-    py::dict voronoi;
+  nb::dict GetVoronoi() {
+    nb::dict voronoi;
 
-    // points are simple copy
     voronoi["points"] =
         CopyFromBase(Base_::numberofvpoints, dim_, Base_::vpointlist);
 
-    // vornoi edges
-    py::array_t<int> vedges({Base_::numberofvedges, n_voroedge_corners_});
-    int* vedges_ptr = static_cast<int*>(vedges.request().ptr);
+    const size_t n_vedges = static_cast<size_t>(Base_::numberofvedges);
+    const size_t vedges_total =
+        n_vedges * static_cast<size_t>(n_voroedge_corners_);
+    int* vedges_ptr = nullptr;
+    if (vedges_total > 0) {
+      vedges_ptr = new int[vedges_total]();
+    } else {
+      vedges_ptr = new int[1]();
+    }
 
-    // infinite vertex is not defined.
-    // however for plotting, one could project this to a certain plane.
-    // to make that process a bit easier, following are provided:
-    // 1. reference to infinite vertex is assigned with negative value
-    //    and it counts down at every occurrence. that way, we can just
-    //    append new points to existing point array.
-    // 2. keep track of edge ids with infinite vertex
-    // 3. and their normals
-    int infinite_vertex_id{-1}; //
-    py::list edges_with_infinite_vertex;
-    py::list ray_directions;
+    int infinite_vertex_id{-1};
+    nb::list edges_with_infinite_vertex;
+    nb::list ray_directions;
     for (int i{}; i < Base_::numberofvedges; ++i) {
       const auto& base_voroedge = Base_::vedgelist[i];
 
@@ -706,53 +702,70 @@ public:
       vedges_ptr[ve_id] = base_voroedge.v1;
 
       const auto& v2 = base_voroedge.v2;
-      if (v2 < 0) { // negative -> "infinite vertex"
-        vedges_ptr[ve_id + 1] = infinite_vertex_id; // <- (1)
+      if (v2 < 0) {
+        vedges_ptr[ve_id + 1] = infinite_vertex_id;
         --infinite_vertex_id;
 
-        edges_with_infinite_vertex.append(i); // <- (2)
+        edges_with_infinite_vertex.append(i);
 
-        py::list normal(3);
-        normal[0] = base_voroedge.vnormal[0];
-        normal[1] = base_voroedge.vnormal[1];
-        normal[2] = base_voroedge.vnormal[2];
-        ray_directions.append(normal); // <- 3
+        nb::list normal;
+        normal.append(base_voroedge.vnormal[0]);
+        normal.append(base_voroedge.vnormal[1]);
+        normal.append(base_voroedge.vnormal[2]);
+        ray_directions.append(normal);
       } else {
         vedges_ptr[ve_id + 1] = v2;
       }
     }
-    voronoi["edges"] = vedges;
+    nb::capsule vedges_owner(vedges_ptr, [](void* p) noexcept {
+      delete[] static_cast<int*>(p);
+    });
+    size_t vedges_shape[2] = {n_vedges,
+                              static_cast<size_t>(n_voroedge_corners_)};
+    voronoi["edges"] =
+        nb::ndarray<nb::numpy, int>(vedges_ptr, 2, vedges_shape, vedges_owner);
     voronoi["edges_with_infinite_vertex"] =
-        py::make_tuple(edges_with_infinite_vertex, ray_directions);
+        nb::make_tuple(edges_with_infinite_vertex, ray_directions);
 
     // facets
-    // Base_::vorofacet includes cell neighbors too
-    py::array_t<int> facet2cell(
-        {Base_::numberofvfacets, n_cell_neighbors_per_vorofacet_});
-    py::list facets;
-    int* f2c_ptr = static_cast<int*>(facet2cell.request().ptr);
+    const size_t n_vfacets = static_cast<size_t>(Base_::numberofvfacets);
+    const size_t f2c_total =
+        n_vfacets * static_cast<size_t>(n_cell_neighbors_per_vorofacet_);
+    int* f2c_ptr = nullptr;
+    if (f2c_total > 0) {
+      f2c_ptr = new int[f2c_total]();
+    } else {
+      f2c_ptr = new int[1]();
+    }
+
+    nb::list facets;
     for (int i{}; i < Base_::numberofvfacets; ++i) {
       const auto& v_facet = Base_::vfacetlist[i];
       const int f2c_id = i * n_cell_neighbors_per_vorofacet_;
       f2c_ptr[f2c_id] = v_facet.c1;
       f2c_ptr[f2c_id + 1] = v_facet.c2;
 
-      py::list facet;
-      // "... elist[0] saves the number of Voronoi edges ..."
+      nb::list facet;
       for (int j{1}; j < v_facet.elist[0] + 1; ++j) {
         facet.append(v_facet.elist[j]);
       }
       facets.append(facet);
     }
-    voronoi["facet2cell"] = facet2cell;
+    nb::capsule f2c_owner(f2c_ptr, [](void* p) noexcept {
+      delete[] static_cast<int*>(p);
+    });
+    size_t f2c_shape[2] = {
+        n_vfacets,
+        static_cast<size_t>(n_cell_neighbors_per_vorofacet_)};
+    voronoi["facet2cell"] =
+        nb::ndarray<nb::numpy, int>(f2c_ptr, 2, f2c_shape, f2c_owner);
     voronoi["facets"] = facets;
 
     // cells
-    py::list cells;
+    nb::list cells;
     for (int i{}; i < Base_::numberofvcells; ++i) {
       const auto& v_cell = Base_::vcelllist[i];
-      const auto& n_facets = v_cell[0];
-      py::list cell;
+      nb::list cell;
       for (int j{1}; j < v_cell[0] + 1; ++j) {
         cell.append(v_cell[j]);
       }
@@ -764,102 +777,107 @@ public:
   }
 
   // load from files
-  void LoadNode(std::string fbase) { Base_::load_node(ToCharPtr(fbase)); }
-
-  void LoadEdge(std::string fbase) { Base_::load_edge(ToCharPtr(fbase)); }
-
-  void LoadFace(std::string fbase) { Base_::load_face(ToCharPtr(fbase)); }
-
-  void LoadTet(std::string fbase) { Base_::load_tet(ToCharPtr(fbase)); }
-
-  void LoadVol(std::string fbase) { Base_::load_vol(ToCharPtr(fbase)); }
-
-  void LoadVar(std::string fbase) { Base_::load_var(ToCharPtr(fbase)); }
-
-  void LoadMtr(std::string fbase) { Base_::load_mtr(ToCharPtr(fbase)); }
-
-  void LoadElem(std::string fbase) { Base_::load_elem(ToCharPtr(fbase)); }
-
-  void LoadPoly(std::string fbase) { Base_::load_poly(ToCharPtr(fbase)); }
-
-  void LoadOff(std::string fbase) { Base_::load_off(ToCharPtr(fbase)); }
-
-  void LoadPly(std::string fbase) { Base_::load_ply(ToCharPtr(fbase)); }
-
-  void LoadStl(std::string fbase) { Base_::load_stl(ToCharPtr(fbase)); }
-
-  void LoadVtk(std::string fbase) { Base_::load_vtk(ToCharPtr(fbase)); }
-
+  void LoadNode(std::string fbase) { Base_::load_node(ToCStr(fbase).data()); }
+  void LoadEdge(std::string fbase) { Base_::load_edge(ToCStr(fbase).data()); }
+  void LoadFace(std::string fbase) { Base_::load_face(ToCStr(fbase).data()); }
+  void LoadTet(std::string fbase) { Base_::load_tet(ToCStr(fbase).data()); }
+  void LoadVol(std::string fbase) { Base_::load_vol(ToCStr(fbase).data()); }
+  void LoadVar(std::string fbase) { Base_::load_var(ToCStr(fbase).data()); }
+  void LoadMtr(std::string fbase) { Base_::load_mtr(ToCStr(fbase).data()); }
+  void LoadElem(std::string fbase) { Base_::load_elem(ToCStr(fbase).data()); }
+  void LoadPoly(std::string fbase) { Base_::load_poly(ToCStr(fbase).data()); }
+  void LoadOff(std::string fbase) { Base_::load_off(ToCStr(fbase).data()); }
+  void LoadPly(std::string fbase) { Base_::load_ply(ToCStr(fbase).data()); }
+  void LoadStl(std::string fbase) { Base_::load_stl(ToCStr(fbase).data()); }
+  void LoadVtk(std::string fbase) { Base_::load_vtk(ToCStr(fbase).data()); }
   void LoadMedit(std::string fbase, bool istetmesh) {
-    Base_::load_medit(ToCharPtr(fbase), (istetmesh) ? 1 : 0);
+    Base_::load_medit(ToCStr(fbase).data(), (istetmesh) ? 1 : 0);
   }
 
   // save to files
-  void SaveNodes(std::string fbase) { Base_::save_nodes(ToCharPtr(fbase)); }
-
+  void SaveNodes(std::string fbase) { Base_::save_nodes(ToCStr(fbase).data()); }
   void SaveElements(std::string fbase) {
-    Base_::save_elements(ToCharPtr(fbase));
+    Base_::save_elements(ToCStr(fbase).data());
   }
-
-  void SaveFaces(std::string fbase) { Base_::save_faces(ToCharPtr(fbase)); }
-
-  void SaveEdges(std::string fbase) { Base_::save_neighbors(ToCharPtr(fbase)); }
-
+  void SaveFaces(std::string fbase) { Base_::save_faces(ToCStr(fbase).data()); }
+  void SaveEdges(std::string fbase) { Base_::save_edges(ToCStr(fbase).data()); }
   void SaveNeighbors(std::string fbase) {
-    Base_::save_neighbors(ToCharPtr(fbase));
+    Base_::save_neighbors(ToCStr(fbase).data());
   }
-
-  void SavePoly(std::string fbase) { Base_::save_poly(ToCharPtr(fbase)); }
-
+  void SavePoly(std::string fbase) { Base_::save_poly(ToCStr(fbase).data()); }
   void SaveFaces2Smesh(std::string fbase) {
-    Base_::save_faces2smesh(ToCharPtr(fbase));
+    Base_::save_faces2smesh(ToCStr(fbase).data());
   }
 };
 
-inline void add_pytetgenio_class(py::module_& m) {
+inline void add_pytetgenio_class(nb::module_& m) {
 
-  py::class_<PyTetgenIo> klasse(m, "TetgenIO");
+  nb::class_<PyTetgenIo> klasse(m, "TetgenIO");
 
-  klasse.def(py::init<>())
+  klasse.def(nb::init<>())
+      .def(nb::init<nb::handle,
+                    nb::list,
+                    nb::handle,
+                    nb::handle,
+                    nb::handle,
+                    nb::list,
+                    nb::handle,
+                    nb::handle,
+                    nb::handle,
+                    nb::handle,
+                    bool>(),
+           nb::arg("points"),
+           nb::arg("facets"),
+           nb::arg("point_attributes") = nb::none(),
+           nb::arg("point_metrics") = nb::none(),
+           nb::arg("facet_markers") = nb::none(),
+           nb::arg("h_facets") = nb::list(),
+           nb::arg("holes") = nb::none(),
+           nb::arg("regions") = nb::none(),
+           nb::arg("facet_constraints") = nb::none(),
+           nb::arg("segment_constraints") = nb::none(),
+           nb::arg("debug") = false)
       .def("setup_points",
            &PyTetgenIo::SetupPoints,
-           py::arg("points"),
-           py::arg("point_attributes") = py::array_t<REAL>(),
-           py::arg("point_metrics") = py::array_t<REAL>(),
-           py::arg("debug") = false)
+           nb::arg("points"),
+           nb::arg("point_attributes") = nb::none(),
+           nb::arg("point_metrics") = nb::none(),
+           nb::arg("debug") = false)
       .def("setup_plc",
            &PyTetgenIo::SetupPlc,
-           py::arg("points"),
-           py::arg("facets"),
-           py::arg("point_attributes") = py::array_t<REAL>(),
-           py::arg("point_metrics") = py::array_t<REAL>(),
-           py::arg("facet_markers") = py::array_t<int>(),
-           py::arg("h_facets") = py::list(),
-           py::arg("holes") = py::array_t<REAL>(),
-           py::arg("regions") = py::array_t<REAL>(),
-           py::arg("facet_constraints") = py::array_t<REAL>(),
-           py::arg("segment_constraints") = py::array_t<REAL>(),
-           py::arg("debug") = false)
+           nb::arg("points"),
+           nb::arg("facets"),
+           nb::arg("point_attributes") = nb::none(),
+           nb::arg("point_metrics") = nb::none(),
+           nb::arg("facet_markers") = nb::none(),
+           nb::arg("h_facets") = nb::list(),
+           nb::arg("holes") = nb::none(),
+           nb::arg("regions") = nb::none(),
+           nb::arg("facet_constraints") = nb::none(),
+           nb::arg("segment_constraints") = nb::none(),
+           nb::arg("debug") = false)
       .def("setup_tetmesh",
            &PyTetgenIo::SetupTetMesh,
-           py::arg("points"),
-           py::arg("tetrahedra"),
-           py::arg("point_attributes") = py::array_t<REAL>(),
-           py::arg("point_metrics") = py::array_t<REAL>(),
-           py::arg("tetrahedron_attributes") = py::array_t<REAL>(),
-           py::arg("tetrahedron_constraints") = py::array_t<REAL>(),
-           py::arg("refine_elements") = py::array_t<int>(),
-           py::arg("refine_element_constraints") = py::array_t<REAL>(),
-           py::arg("trifaces") = py::array_t<int>(),
-           py::arg("triface_markers") = py::array_t<int>(),
-           py::arg("edges") = py::array_t<int>(),
-           py::arg("edge_markers") = py::array_t<int>(),
-           py::arg("debug") = false)
+           nb::arg("points"),
+           nb::arg("tetrahedra"),
+           nb::arg("point_attributes") = nb::none(),
+           nb::arg("point_metrics") = nb::none(),
+           nb::arg("tetrahedron_attributes") = nb::none(),
+           nb::arg("tetrahedron_constraints") = nb::none(),
+           nb::arg("refine_elements") = nb::none(),
+           nb::arg("refine_element_constraints") = nb::none(),
+           nb::arg("trifaces") = nb::none(),
+           nb::arg("triface_markers") = nb::none(),
+           nb::arg("edges") = nb::none(),
+           nb::arg("edge_markers") = nb::none(),
+           nb::arg("debug") = false)
       .def("points", &PyTetgenIo::GetPoints)
+      .def("pointattributes", &PyTetgenIo::GetPointAttributes)
       .def("tetrahedra", &PyTetgenIo::GetTetrahedra)
       .def("tetrahedronattributes", &PyTetgenIo::GetTetrahedronAttributes)
       .def("trifaces", &PyTetgenIo::GetTriFaces)
       .def("trifacemarkers", &PyTetgenIo::GetTriFaceMarkers)
+      .def("o2faces", &PyTetgenIo::GetO2Faces)
       .def("neighbors", &PyTetgenIo::GetNeighbors)
       .def("tet2faces", &PyTetgenIo::GetTet2Faces)
       .def("tet2edges", &PyTetgenIo::GetTet2Edges)
@@ -867,34 +885,35 @@ inline void add_pytetgenio_class(py::module_& m) {
       .def("face2edges", &PyTetgenIo::GetFace2Edges)
       .def("edges", &PyTetgenIo::GetEdges)
       .def("edgemarkers", &PyTetgenIo::GetEdgeMarkers)
+      .def("o2edges", &PyTetgenIo::GetO2Edges)
       .def("edge2tets", &PyTetgenIo::GetEdge2Tets)
       .def("voronoi", &PyTetgenIo::GetVoronoi)
-      .def("load_node", &PyTetgenIo::LoadNode, py::arg("fname_base"))
-      .def("load_edge", &PyTetgenIo::LoadEdge, py::arg("fname_base"))
-      .def("load_face", &PyTetgenIo::LoadFace, py::arg("fname_base"))
-      .def("load_tet", &PyTetgenIo::LoadTet, py::arg("fname_base"))
-      .def("load_vol", &PyTetgenIo::LoadVol, py::arg("fname_base"))
-      .def("load_var", &PyTetgenIo::LoadVar, py::arg("fname_base"))
-      .def("load_mtr", &PyTetgenIo::LoadMtr, py::arg("fname_base"))
-      .def("load_elem", &PyTetgenIo::LoadElem, py::arg("fname_base"))
-      .def("load_poly", &PyTetgenIo::LoadPoly, py::arg("fname_base"))
-      .def("load_off", &PyTetgenIo::LoadOff, py::arg("fname_base"))
-      .def("load_ply", &PyTetgenIo::LoadPly, py::arg("fname_base"))
-      .def("load_stl", &PyTetgenIo::LoadStl, py::arg("fname_base"))
-      .def("load_vtk", &PyTetgenIo::LoadVtk, py::arg("fname_base"))
+      .def("load_node", &PyTetgenIo::LoadNode, nb::arg("fname_base"))
+      .def("load_edge", &PyTetgenIo::LoadEdge, nb::arg("fname_base"))
+      .def("load_face", &PyTetgenIo::LoadFace, nb::arg("fname_base"))
+      .def("load_tet", &PyTetgenIo::LoadTet, nb::arg("fname_base"))
+      .def("load_vol", &PyTetgenIo::LoadVol, nb::arg("fname_base"))
+      .def("load_var", &PyTetgenIo::LoadVar, nb::arg("fname_base"))
+      .def("load_mtr", &PyTetgenIo::LoadMtr, nb::arg("fname_base"))
+      .def("load_elem", &PyTetgenIo::LoadElem, nb::arg("fname_base"))
+      .def("load_poly", &PyTetgenIo::LoadPoly, nb::arg("fname_base"))
+      .def("load_off", &PyTetgenIo::LoadOff, nb::arg("fname_base"))
+      .def("load_ply", &PyTetgenIo::LoadPly, nb::arg("fname_base"))
+      .def("load_stl", &PyTetgenIo::LoadStl, nb::arg("fname_base"))
+      .def("load_vtk", &PyTetgenIo::LoadVtk, nb::arg("fname_base"))
       .def("load_medit",
            &PyTetgenIo::LoadMedit,
-           py::arg("fname_base"),
-           py::arg("is_tet_mesh"))
-      .def("save_nodes", &PyTetgenIo::SaveNodes, py::arg("fname_base"))
-      .def("save_elements", &PyTetgenIo::SaveElements, py::arg("fname_base"))
-      .def("save_faces", &PyTetgenIo::SaveFaces, py::arg("fname_base"))
-      .def("save_edges", &PyTetgenIo::SaveEdges, py::arg("fname_base"))
-      .def("save_neighbors", &PyTetgenIo::SaveNeighbors, py::arg("fname_base"))
-      .def("save_poly", &PyTetgenIo::SavePoly, py::arg("fname_base"))
-      .def("save_faces2Smesh",
+           nb::arg("fname_base"),
+           nb::arg("is_tet_mesh"))
+      .def("save_nodes", &PyTetgenIo::SaveNodes, nb::arg("fname_base"))
+      .def("save_elements", &PyTetgenIo::SaveElements, nb::arg("fname_base"))
+      .def("save_faces", &PyTetgenIo::SaveFaces, nb::arg("fname_base"))
+      .def("save_edges", &PyTetgenIo::SaveEdges, nb::arg("fname_base"))
+      .def("save_neighbors", &PyTetgenIo::SaveNeighbors, nb::arg("fname_base"))
+      .def("save_poly", &PyTetgenIo::SavePoly, nb::arg("fname_base"))
+      .def("save_faces2smesh",
            &PyTetgenIo::SaveFaces2Smesh,
-           py::arg("fname_base"));
+           nb::arg("fname_base"));
 }
 
 } // namespace tetgenpy
