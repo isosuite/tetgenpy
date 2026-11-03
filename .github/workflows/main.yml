@@ -26,8 +26,9 @@ jobs:
         CIBW_ARCHS: ${{ matrix.arch }}
         CIBW_BUILD: ${{ matrix.cw_build }}
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
+        name: cibw-wheels-macos-${{ matrix.arch }}-${{ strategy.job-index }}
         path: ./wheelhouse/*.whl
 
 
@@ -48,10 +49,11 @@ jobs:
       env:
         CIBW_ARCHS: ${{ matrix.arch }}
         CIBW_BUILD: ${{ matrix.cw_build }}
-        CIBW_SKIP: "pp39-many*"
+        CIBW_SKIP: "cp39-* pp39-*"
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
+        name: cibw-wheels-linux-${{ matrix.arch }}-${{ strategy.job-index }}
         path: ./wheelhouse/*.whl
 
   linux_wheel_qemu:
@@ -71,7 +73,7 @@ jobs:
 
     - name: Set up QEMU
       if: runner.os == 'Linux'
-      uses: docker/setup-qemu-action@v2
+      uses: docker/setup-qemu-action@v3
       with:
         platforms: arm64, ppc64le
 
@@ -80,10 +82,12 @@ jobs:
       env:
         CIBW_ARCHS: ${{ matrix.arch }}
         CIBW_BUILD: ${{ matrix.cw_build }}
+        CIBW_SKIP: "cp39-* pp39-*"
         CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x}"
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
+        name: cibw-wheels-linux-qemu-${{ matrix.arch }}-${{ strategy.job-index }}
         path: ./wheelhouse/*.whl
 
 
@@ -102,10 +106,12 @@ jobs:
       uses: pypa/cibuildwheel@v2.22
       env:
         CIBW_ARCHS: ${{ matrix.arch }}
+        CIBW_SKIP: "cp39-* pp39-*"
 
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
+        name: cibw-wheels-windows-${{ matrix.arch }}-${{ strategy.job-index }}
         path: ./wheelhouse/*.whl
 
 
@@ -119,8 +125,9 @@ jobs:
     - name: Build sdist
       run: pipx run build --sdist
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
+        name: cibw-sdist
         path: ./dist/*
 
   upload_pypi:
@@ -131,10 +138,11 @@ jobs:
     # try to publish only if this is a push to stable branch
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: cibw-*
           path: dist
+          merge-multiple: true
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:

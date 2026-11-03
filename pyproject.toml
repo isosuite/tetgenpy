@@ -15,7 +15,6 @@ classifiers=[
     "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -24,7 +23,7 @@ classifiers=[
     "Topic :: Scientific/Engineering",
 ]
 dependencies = ["numpy"]
-requires-python = '>=3.9'
+requires-python = '>=3.10'
 dynamic = ["version"]
 
 [project.readme]
@@ -50,12 +49,13 @@ input = "tetgenpy/_version.py"
 [tool.cibuildwheel]
 test-requires = ["pytest"]
 test-command = "pytest {project}/tests"
+skip = "cp39-* pp39-*"
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
 
 [tool.cibuildwheel.windows]
-skip = "pp*"
+skip = "pp* cp39-*"
 
 [tool.ruff]
 lint.select = [
@@ -75,7 +75,7 @@ lint.select = [
   "A",           # flake8-builtins
 ]
 lint.fixable = ["ALL"]
-target-version = "py38"
+target-version = "py310"
 lint.ignore = [
     "PLR2004", # TODO!
     "PLR0912", # Too many branches

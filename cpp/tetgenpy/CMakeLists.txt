@@ -1,5 +1,5 @@
 find_package(
-  Python 3.9
+  Python 3.10
   COMPONENTS Interpreter Development.Module
   REQUIRED)
 find_package(nanobind CONFIG REQUIRED)
