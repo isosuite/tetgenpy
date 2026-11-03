@@ -1,0 +1,33 @@
+.. _tetgenpy.tetgenpy_core:
+
+tetgenpy.tetgenpy\_core
+=======================
+
+.. automodule:: tetgenpy.tetgenpy_core
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template:
+   
+      TetgenIO
+   
+   
+
+   
+   
+   
+
+
+

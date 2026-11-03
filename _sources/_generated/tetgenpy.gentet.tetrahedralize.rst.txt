@@ -1,0 +1,6 @@
+tetgenpy.gentet.tetrahedralize
+==============================
+
+.. currentmodule:: tetgenpy.gentet
+
+.. autofunction:: tetrahedralize

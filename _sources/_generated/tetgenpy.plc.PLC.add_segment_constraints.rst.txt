@@ -1,0 +1,6 @@
+tetgenpy.plc.PLC.add\_segment\_constraints
+==========================================
+
+.. currentmodule:: tetgenpy.plc
+
+.. automethod:: PLC.add_segment_constraints

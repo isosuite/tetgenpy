@@ -1,0 +1,6 @@
+tetgenpy.plc.PLC.to\_tetgenio
+=============================
+
+.. currentmodule:: tetgenpy.plc
+
+.. automethod:: PLC.to_tetgenio

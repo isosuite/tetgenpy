@@ -1,0 +1,33 @@
+.. _tetgenpy.plc:
+
+tetgenpy.plc
+============
+
+.. automodule:: tetgenpy.plc
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template:
+   
+      PLC
+   
+   
+
+   
+   
+   
+
+
+

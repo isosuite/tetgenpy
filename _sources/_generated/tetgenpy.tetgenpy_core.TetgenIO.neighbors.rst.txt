@@ -1,0 +1,6 @@
+tetgenpy.tetgenpy\_core.TetgenIO.neighbors
+==========================================
+
+.. currentmodule:: tetgenpy.tetgenpy_core
+
+.. automethod:: TetgenIO.neighbors

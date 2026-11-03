@@ -1,0 +1,50 @@
+tetgenpy.plc.PLC
+================
+
+.. currentmodule:: tetgenpy.plc
+
+.. autoclass:: PLC
+   :show-inheritance:
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+     
+     
+       PLC.add_facet_with_holes
+     
+     
+       PLC.add_facets
+     
+     
+       PLC.add_holes
+     
+     
+       PLC.add_points
+     
+     
+       PLC.add_regions
+     
+     
+       PLC.add_segment_constraints
+     
+     
+       PLC.show
+     
+     
+       PLC.sofarsogood
+     
+     
+       PLC.to_tetgenio
+     
+   
+   
+
+   
+   
+   

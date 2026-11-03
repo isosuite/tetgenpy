@@ -1,0 +1,33 @@
+.. _tetgenpy.gentet:
+
+tetgenpy.gentet
+===============
+
+.. automodule:: tetgenpy.gentet
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      tetgen_exe
+      tetrahedralize
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

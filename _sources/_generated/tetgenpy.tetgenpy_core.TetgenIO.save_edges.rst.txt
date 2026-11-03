@@ -1,0 +1,6 @@
+tetgenpy.tetgenpy\_core.TetgenIO.save\_edges
+============================================
+
+.. currentmodule:: tetgenpy.tetgenpy_core
+
+.. automethod:: TetgenIO.save_edges

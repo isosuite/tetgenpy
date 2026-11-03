@@ -1,0 +1,6 @@
+tetgenpy.tetgenpy\_core.TetgenIO.trifacemarkers
+===============================================
+
+.. currentmodule:: tetgenpy.tetgenpy_core
+
+.. automethod:: TetgenIO.trifacemarkers

@@ -1,0 +1,6 @@
+tetgenpy.tetgenpy\_core.TetgenIO.load\_elem
+===========================================
+
+.. currentmodule:: tetgenpy.tetgenpy_core
+
+.. automethod:: TetgenIO.load_elem

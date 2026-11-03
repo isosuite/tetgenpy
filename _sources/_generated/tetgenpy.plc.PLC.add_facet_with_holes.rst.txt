@@ -1,0 +1,6 @@
+tetgenpy.plc.PLC.add\_facet\_with\_holes
+========================================
+
+.. currentmodule:: tetgenpy.plc
+
+.. automethod:: PLC.add_facet_with_holes

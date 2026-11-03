@@ -1,0 +1,6 @@
+tetgenpy.plc.PLC.add\_regions
+=============================
+
+.. currentmodule:: tetgenpy.plc
+
+.. automethod:: PLC.add_regions

@@ -1,0 +1,6 @@
+tetgenpy.tetgenpy\_core.TetgenIO.tetrahedra
+===========================================
+
+.. currentmodule:: tetgenpy.tetgenpy_core
+
+.. automethod:: TetgenIO.tetrahedra

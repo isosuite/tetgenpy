@@ -1,0 +1,6 @@
+tetgenpy.plc.PLC.add\_facets
+============================
+
+.. currentmodule:: tetgenpy.plc
+
+.. automethod:: PLC.add_facets

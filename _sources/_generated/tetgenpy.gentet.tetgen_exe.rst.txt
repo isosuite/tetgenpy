@@ -1,0 +1,6 @@
+tetgenpy.gentet.tetgen\_exe
+===========================
+
+.. currentmodule:: tetgenpy.gentet
+
+.. autofunction:: tetgen_exe

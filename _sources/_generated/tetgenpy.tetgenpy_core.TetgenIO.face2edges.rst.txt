@@ -1,0 +1,6 @@
+tetgenpy.tetgenpy\_core.TetgenIO.face2edges
+===========================================
+
+.. currentmodule:: tetgenpy.tetgenpy_core
+
+.. automethod:: TetgenIO.face2edges

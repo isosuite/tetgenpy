@@ -1,0 +1,6 @@
+tetgenpy.plc.PLC.add\_holes
+===========================
+
+.. currentmodule:: tetgenpy.plc
+
+.. automethod:: PLC.add_holes

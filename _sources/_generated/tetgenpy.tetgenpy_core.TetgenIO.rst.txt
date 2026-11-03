@@ -1,0 +1,146 @@
+tetgenpy.tetgenpy\_core.TetgenIO
+================================
+
+.. currentmodule:: tetgenpy.tetgenpy_core
+
+.. autoclass:: TetgenIO
+   :show-inheritance:
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+     
+     
+       TetgenIO.edge2tets
+     
+     
+       TetgenIO.edgemarkers
+     
+     
+       TetgenIO.edges
+     
+     
+       TetgenIO.face2edges
+     
+     
+       TetgenIO.face2tets
+     
+     
+       TetgenIO.load_edge
+     
+     
+       TetgenIO.load_elem
+     
+     
+       TetgenIO.load_face
+     
+     
+       TetgenIO.load_medit
+     
+     
+       TetgenIO.load_mtr
+     
+     
+       TetgenIO.load_node
+     
+     
+       TetgenIO.load_off
+     
+     
+       TetgenIO.load_ply
+     
+     
+       TetgenIO.load_poly
+     
+     
+       TetgenIO.load_stl
+     
+     
+       TetgenIO.load_tet
+     
+     
+       TetgenIO.load_var
+     
+     
+       TetgenIO.load_vol
+     
+     
+       TetgenIO.load_vtk
+     
+     
+       TetgenIO.neighbors
+     
+     
+       TetgenIO.o2edges
+     
+     
+       TetgenIO.o2faces
+     
+     
+       TetgenIO.pointattributes
+     
+     
+       TetgenIO.points
+     
+     
+       TetgenIO.save_edges
+     
+     
+       TetgenIO.save_elements
+     
+     
+       TetgenIO.save_faces
+     
+     
+       TetgenIO.save_faces2smesh
+     
+     
+       TetgenIO.save_neighbors
+     
+     
+       TetgenIO.save_nodes
+     
+     
+       TetgenIO.save_poly
+     
+     
+       TetgenIO.setup_plc
+     
+     
+       TetgenIO.setup_points
+     
+     
+       TetgenIO.setup_tetmesh
+     
+     
+       TetgenIO.tet2edges
+     
+     
+       TetgenIO.tet2faces
+     
+     
+       TetgenIO.tetrahedra
+     
+     
+       TetgenIO.tetrahedronattributes
+     
+     
+       TetgenIO.trifacemarkers
+     
+     
+       TetgenIO.trifaces
+     
+     
+       TetgenIO.voronoi
+     
+   
+   
+
+   
+   
+   

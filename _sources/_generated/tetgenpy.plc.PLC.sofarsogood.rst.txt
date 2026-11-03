@@ -1,0 +1,6 @@
+tetgenpy.plc.PLC.sofarsogood
+============================
+
+.. currentmodule:: tetgenpy.plc
+
+.. automethod:: PLC.sofarsogood

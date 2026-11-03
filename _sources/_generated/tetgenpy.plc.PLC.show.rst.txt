@@ -1,0 +1,6 @@
+tetgenpy.plc.PLC.show
+=====================
+
+.. currentmodule:: tetgenpy.plc
+
+.. automethod:: PLC.show

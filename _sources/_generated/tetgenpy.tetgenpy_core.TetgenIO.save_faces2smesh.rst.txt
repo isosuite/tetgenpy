@@ -1,0 +1,6 @@
+tetgenpy.tetgenpy\_core.TetgenIO.save\_faces2smesh
+==================================================
+
+.. currentmodule:: tetgenpy.tetgenpy_core
+
+.. automethod:: TetgenIO.save_faces2smesh

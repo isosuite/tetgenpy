@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>tetgenpy &#8212; tetgenpy 0.2.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css?v=883df730" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing" href="CONTRIBUTING.html" />
+    <link href="_static/style.css" rel="stylesheet" type="text/css">
+
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/tetgenpy.png" class="logo__image only-light" alt="tetgenpy 0.2.0 documentation - Home"/>
+    <img src="_static/tetgenpy.png" class="logo__image only-dark pst-js-only" alt="tetgenpy 0.2.0 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/tataratat/tetgenpy">
+    Github
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="CONTRIBUTING.html">
+    Contiributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api_reference.html">
+    API references
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/tataratat/tetgenpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/tetgenpy/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://github.com/tataratat/tetgenpy">
+    Github
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="CONTRIBUTING.html">
+    Contiributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api_reference.html">
+    API references
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/tataratat/tetgenpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/tetgenpy/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="toctree-wrapper compound">
+</div>
+<section id="tetgenpy">
+<h1>tetgenpy<a class="headerlink" href="#tetgenpy" title="Link to this heading">#</a></h1>
+<p align="center"><img src="https://github.com/tataratat/tetgenpy/raw/main/docs/source/_static/tetgenpy.png" width="50%" title="tet"></p><a class="reference external image-reference" href="https://github.com/tataratat/tetgenpy/actions/workflows/main.yml"><img alt="main" src="https://github.com/tataratat/tetgenpy/actions/workflows/main.yml/badge.svg" />
+</a>
+<a class="reference external image-reference" href="https://badge.fury.io/py/tetgenpy"><img alt="PyPI version" src="https://badge.fury.io/py/tetgenpy.svg" />
+</a>
+<p>tetgenpy is a python wrapper for <a class="reference external" href="https://www.wias-berlin.de/people/si/">Hang Si</a>’s <a class="reference external" href="https://wias-berlin.de/software/index.jsp?id=TetGen&amp;lang=1">TetGen - A Quality Tetrahedral Mesh Generator and a 3D Delaunay Triangulator</a>.
+It helps to prepare <a class="reference external" href="https://wias-berlin.de/software/tetgen/1.5/doc/manual/manual027.png">various types of inputs - points, piecewise linear complexes (PLCs), and tetmesh -</a> for tetrahedron mesh generation based on simple python types, such as <code class="docutils literal notranslate"><span class="pre">list</span></code> and <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>.</p>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>tetgenpy
+</pre></div>
+</div>
+<p>For current development version,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/tataratat/tetgenpy.git@main
+</pre></div>
+</div>
+</section>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h2>
+<p>Following is an example for tetrahedralization of a unit cube defined as PLCs.
+Alternatively, you could also use <a class="reference external" href="https://tataratat.github.io/tetgenpy/tetgenpy.html#module-tetgenpy.plc">tetgenpy.PLC</a> class to prepare <code class="docutils literal notranslate"><span class="pre">TetgenIO</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tetgenpy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># tetrahedralize unit cube</span>
+<span class="c1"># define points</span>
+<span class="n">points</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+<span class="p">]</span>
+
+<span class="c1"># define facets - it can be list of polygons.</span>
+<span class="c1"># here, they are hexa faces</span>
+<span class="n">facets</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
+<span class="p">]</span>
+
+<span class="c1"># prepare TetgenIO - input for tetgen</span>
+<span class="n">tetgen_in</span> <span class="o">=</span> <span class="n">tetgenpy</span><span class="o">.</span><span class="n">TetgenIO</span><span class="p">()</span>
+
+<span class="c1"># set points, facets, and facet_markers.</span>
+<span class="c1"># facet_markers can be useful for setting boundary conditions</span>
+<span class="n">tetgen_in</span><span class="o">.</span><span class="n">setup_plc</span><span class="p">(</span>
+    <span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">,</span>
+    <span class="n">facets</span><span class="o">=</span><span class="n">facets</span><span class="p">,</span>
+    <span class="n">facet_markers</span><span class="o">=</span><span class="p">[[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">facets</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span>
+<span class="p">)</span>
+
+<span class="c1"># tetgen's tetraheralize function with switches</span>
+<span class="n">tetgen_out</span> <span class="o">=</span> <span class="n">tetgenpy</span><span class="o">.</span><span class="n">tetrahedralize</span><span class="p">(</span><span class="s2">"qa.05"</span><span class="p">,</span> <span class="n">tetgen_in</span><span class="p">)</span>
+
+<span class="c1"># unpack output</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tetgen_out</span><span class="o">.</span><span class="n">points</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tetgen_out</span><span class="o">.</span><span class="n">tetrahedra</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tetgen_out</span><span class="o">.</span><span class="n">trifaces</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tetgen_out</span><span class="o">.</span><span class="n">trifacemarkers</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>This package also provides access to tetgen’s binary executable. Try:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>tetgen<span class="w"> </span>-h
+</pre></div>
+</div>
+</section>
+<section id="working-with-vedo">
+<h2>Working with <code class="docutils literal notranslate"><span class="pre">vedo</span></code><a class="headerlink" href="#working-with-vedo" title="Link to this heading">#</a></h2>
+<p><a class="reference external" href="https://vedo.embl.es">vedo</a> natively supports <code class="docutils literal notranslate"><span class="pre">tetgenpy.TetgenIO</span></code> types starting with version <code class="docutils literal notranslate"><span class="pre">&gt;=2023.5.1</span></code>.
+It is <strong>*A python module for scientific analysis and visualization of эd objects*</strong> that can be used to enhance further workflows.
+You can find an example (same as above) <a class="reference external" href="https://github.com/marcomusy/vedo/blob/master/examples/other/tetgen1.py">here</a> or simply try:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>vedo
+vedo<span class="w"> </span>-r<span class="w"> </span>tetgen1
+</pre></div>
+</div>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">#</a></h2>
+<p>Write an <a class="reference external" href="https://github.com/tataratat/tetgenpy/issues">issue</a> or create a pull request! A simple guideline can be found at <a class="reference external" href="https://github.com/tataratat/tetgenpy/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a></p>
+</section>
+<section id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/tataratat/tetgenpy">Github</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CONTRIBUTING.html">Contiributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="CONTRIBUTING.html#id1">Contributing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="CONTRIBUTING.html#quick-start">Quick start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CONTRIBUTING.html#automatic-formatting-style-check">Automatic formatting / style check</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API references</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#quick-overview-of-core-classes-function">Quick overview of core classes/function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference.html#python-api">Python API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="_generated/tetgenpy.html">tetgenpy</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_generated/tetgenpy.gentet.html">tetgenpy.gentet</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="_generated/tetgenpy.gentet.tetgen_exe.html">tetgenpy.gentet.tetgen_exe</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.gentet.tetgen_exe.html#tetgenpy.gentet.tetgen_exe"><code class="docutils literal notranslate"><span class="pre">tetgen_exe()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="_generated/tetgenpy.gentet.tetrahedralize.html">tetgenpy.gentet.tetrahedralize</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.gentet.tetrahedralize.html#tetgenpy.gentet.tetrahedralize"><code class="docutils literal notranslate"><span class="pre">tetrahedralize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="_generated/tetgenpy.plc.html">tetgenpy.plc</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.html">tetgenpy.plc.PLC</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.html#tetgenpy.plc.PLC"><code class="docutils literal notranslate"><span class="pre">PLC</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_facet_with_holes.html">tetgenpy.plc.PLC.add_facet_with_holes</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_facet_with_holes.html#tetgenpy.plc.PLC.add_facet_with_holes"><code class="docutils literal notranslate"><span class="pre">PLC.add_facet_with_holes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_facets.html">tetgenpy.plc.PLC.add_facets</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_facets.html#tetgenpy.plc.PLC.add_facets"><code class="docutils literal notranslate"><span class="pre">PLC.add_facets()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_holes.html">tetgenpy.plc.PLC.add_holes</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_holes.html#tetgenpy.plc.PLC.add_holes"><code class="docutils literal notranslate"><span class="pre">PLC.add_holes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_points.html">tetgenpy.plc.PLC.add_points</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_points.html#tetgenpy.plc.PLC.add_points"><code class="docutils literal notranslate"><span class="pre">PLC.add_points()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_regions.html">tetgenpy.plc.PLC.add_regions</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_regions.html#tetgenpy.plc.PLC.add_regions"><code class="docutils literal notranslate"><span class="pre">PLC.add_regions()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_segment_constraints.html">tetgenpy.plc.PLC.add_segment_constraints</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.add_segment_constraints.html#tetgenpy.plc.PLC.add_segment_constraints"><code class="docutils literal notranslate"><span class="pre">PLC.add_segment_constraints()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.show.html">tetgenpy.plc.PLC.show</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.show.html#tetgenpy.plc.PLC.show"><code class="docutils literal notranslate"><span class="pre">PLC.show()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.sofarsogood.html">tetgenpy.plc.PLC.sofarsogood</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.sofarsogood.html#tetgenpy.plc.PLC.sofarsogood"><code class="docutils literal notranslate"><span class="pre">PLC.sofarsogood()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.to_tetgenio.html">tetgenpy.plc.PLC.to_tetgenio</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.plc.PLC.to_tetgenio.html#tetgenpy.plc.PLC.to_tetgenio"><code class="docutils literal notranslate"><span class="pre">PLC.to_tetgenio()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.html">tetgenpy.tetgenpy_core</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.html">tetgenpy.tetgenpy_core.TetgenIO</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.html#tetgenpy.tetgenpy_core.TetgenIO"><code class="docutils literal notranslate"><span class="pre">TetgenIO</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.edge2tets.html">tetgenpy.tetgenpy_core.TetgenIO.edge2tets</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.edge2tets.html#tetgenpy.tetgenpy_core.TetgenIO.edge2tets"><code class="docutils literal notranslate"><span class="pre">TetgenIO.edge2tets()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.edgemarkers.html">tetgenpy.tetgenpy_core.TetgenIO.edgemarkers</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.edgemarkers.html#tetgenpy.tetgenpy_core.TetgenIO.edgemarkers"><code class="docutils literal notranslate"><span class="pre">TetgenIO.edgemarkers()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.edges.html">tetgenpy.tetgenpy_core.TetgenIO.edges</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.edges.html#tetgenpy.tetgenpy_core.TetgenIO.edges"><code class="docutils literal notranslate"><span class="pre">TetgenIO.edges()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.face2edges.html">tetgenpy.tetgenpy_core.TetgenIO.face2edges</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.face2edges.html#tetgenpy.tetgenpy_core.TetgenIO.face2edges"><code class="docutils literal notranslate"><span class="pre">TetgenIO.face2edges()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.face2tets.html">tetgenpy.tetgenpy_core.TetgenIO.face2tets</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.face2tets.html#tetgenpy.tetgenpy_core.TetgenIO.face2tets"><code class="docutils literal notranslate"><span class="pre">TetgenIO.face2tets()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_edge.html">tetgenpy.tetgenpy_core.TetgenIO.load_edge</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_edge.html#tetgenpy.tetgenpy_core.TetgenIO.load_edge"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_edge()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_elem.html">tetgenpy.tetgenpy_core.TetgenIO.load_elem</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_elem.html#tetgenpy.tetgenpy_core.TetgenIO.load_elem"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_elem()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_face.html">tetgenpy.tetgenpy_core.TetgenIO.load_face</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_face.html#tetgenpy.tetgenpy_core.TetgenIO.load_face"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_face()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_medit.html">tetgenpy.tetgenpy_core.TetgenIO.load_medit</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_medit.html#tetgenpy.tetgenpy_core.TetgenIO.load_medit"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_medit()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_mtr.html">tetgenpy.tetgenpy_core.TetgenIO.load_mtr</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_mtr.html#tetgenpy.tetgenpy_core.TetgenIO.load_mtr"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_mtr()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_node.html">tetgenpy.tetgenpy_core.TetgenIO.load_node</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_node.html#tetgenpy.tetgenpy_core.TetgenIO.load_node"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_node()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_off.html">tetgenpy.tetgenpy_core.TetgenIO.load_off</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_off.html#tetgenpy.tetgenpy_core.TetgenIO.load_off"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_off()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_ply.html">tetgenpy.tetgenpy_core.TetgenIO.load_ply</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_ply.html#tetgenpy.tetgenpy_core.TetgenIO.load_ply"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_ply()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_poly.html">tetgenpy.tetgenpy_core.TetgenIO.load_poly</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_poly.html#tetgenpy.tetgenpy_core.TetgenIO.load_poly"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_poly()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_stl.html">tetgenpy.tetgenpy_core.TetgenIO.load_stl</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_stl.html#tetgenpy.tetgenpy_core.TetgenIO.load_stl"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_stl()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_tet.html">tetgenpy.tetgenpy_core.TetgenIO.load_tet</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_tet.html#tetgenpy.tetgenpy_core.TetgenIO.load_tet"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_tet()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_var.html">tetgenpy.tetgenpy_core.TetgenIO.load_var</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_var.html#tetgenpy.tetgenpy_core.TetgenIO.load_var"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_var()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_vol.html">tetgenpy.tetgenpy_core.TetgenIO.load_vol</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_vol.html#tetgenpy.tetgenpy_core.TetgenIO.load_vol"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_vol()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_vtk.html">tetgenpy.tetgenpy_core.TetgenIO.load_vtk</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.load_vtk.html#tetgenpy.tetgenpy_core.TetgenIO.load_vtk"><code class="docutils literal notranslate"><span class="pre">TetgenIO.load_vtk()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.neighbors.html">tetgenpy.tetgenpy_core.TetgenIO.neighbors</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.neighbors.html#tetgenpy.tetgenpy_core.TetgenIO.neighbors"><code class="docutils literal notranslate"><span class="pre">TetgenIO.neighbors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.o2edges.html">tetgenpy.tetgenpy_core.TetgenIO.o2edges</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.o2edges.html#tetgenpy.tetgenpy_core.TetgenIO.o2edges"><code class="docutils literal notranslate"><span class="pre">TetgenIO.o2edges()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.o2faces.html">tetgenpy.tetgenpy_core.TetgenIO.o2faces</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.o2faces.html#tetgenpy.tetgenpy_core.TetgenIO.o2faces"><code class="docutils literal notranslate"><span class="pre">TetgenIO.o2faces()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.pointattributes.html">tetgenpy.tetgenpy_core.TetgenIO.pointattributes</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.pointattributes.html#tetgenpy.tetgenpy_core.TetgenIO.pointattributes"><code class="docutils literal notranslate"><span class="pre">TetgenIO.pointattributes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.points.html">tetgenpy.tetgenpy_core.TetgenIO.points</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.points.html#tetgenpy.tetgenpy_core.TetgenIO.points"><code class="docutils literal notranslate"><span class="pre">TetgenIO.points()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_edges.html">tetgenpy.tetgenpy_core.TetgenIO.save_edges</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_edges.html#tetgenpy.tetgenpy_core.TetgenIO.save_edges"><code class="docutils literal notranslate"><span class="pre">TetgenIO.save_edges()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_elements.html">tetgenpy.tetgenpy_core.TetgenIO.save_elements</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_elements.html#tetgenpy.tetgenpy_core.TetgenIO.save_elements"><code class="docutils literal notranslate"><span class="pre">TetgenIO.save_elements()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_faces.html">tetgenpy.tetgenpy_core.TetgenIO.save_faces</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_faces.html#tetgenpy.tetgenpy_core.TetgenIO.save_faces"><code class="docutils literal notranslate"><span class="pre">TetgenIO.save_faces()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_faces2smesh.html">tetgenpy.tetgenpy_core.TetgenIO.save_faces2smesh</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_faces2smesh.html#tetgenpy.tetgenpy_core.TetgenIO.save_faces2smesh"><code class="docutils literal notranslate"><span class="pre">TetgenIO.save_faces2smesh()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_neighbors.html">tetgenpy.tetgenpy_core.TetgenIO.save_neighbors</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_neighbors.html#tetgenpy.tetgenpy_core.TetgenIO.save_neighbors"><code class="docutils literal notranslate"><span class="pre">TetgenIO.save_neighbors()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_nodes.html">tetgenpy.tetgenpy_core.TetgenIO.save_nodes</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_nodes.html#tetgenpy.tetgenpy_core.TetgenIO.save_nodes"><code class="docutils literal notranslate"><span class="pre">TetgenIO.save_nodes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_poly.html">tetgenpy.tetgenpy_core.TetgenIO.save_poly</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.save_poly.html#tetgenpy.tetgenpy_core.TetgenIO.save_poly"><code class="docutils literal notranslate"><span class="pre">TetgenIO.save_poly()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.setup_plc.html">tetgenpy.tetgenpy_core.TetgenIO.setup_plc</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.setup_plc.html#tetgenpy.tetgenpy_core.TetgenIO.setup_plc"><code class="docutils literal notranslate"><span class="pre">TetgenIO.setup_plc()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.setup_points.html">tetgenpy.tetgenpy_core.TetgenIO.setup_points</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.setup_points.html#tetgenpy.tetgenpy_core.TetgenIO.setup_points"><code class="docutils literal notranslate"><span class="pre">TetgenIO.setup_points()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.setup_tetmesh.html">tetgenpy.tetgenpy_core.TetgenIO.setup_tetmesh</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.setup_tetmesh.html#tetgenpy.tetgenpy_core.TetgenIO.setup_tetmesh"><code class="docutils literal notranslate"><span class="pre">TetgenIO.setup_tetmesh()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.tet2edges.html">tetgenpy.tetgenpy_core.TetgenIO.tet2edges</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.tet2edges.html#tetgenpy.tetgenpy_core.TetgenIO.tet2edges"><code class="docutils literal notranslate"><span class="pre">TetgenIO.tet2edges()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.tet2faces.html">tetgenpy.tetgenpy_core.TetgenIO.tet2faces</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.tet2faces.html#tetgenpy.tetgenpy_core.TetgenIO.tet2faces"><code class="docutils literal notranslate"><span class="pre">TetgenIO.tet2faces()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.tetrahedra.html">tetgenpy.tetgenpy_core.TetgenIO.tetrahedra</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.tetrahedra.html#tetgenpy.tetgenpy_core.TetgenIO.tetrahedra"><code class="docutils literal notranslate"><span class="pre">TetgenIO.tetrahedra()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.tetrahedronattributes.html">tetgenpy.tetgenpy_core.TetgenIO.tetrahedronattributes</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.tetrahedronattributes.html#tetgenpy.tetgenpy_core.TetgenIO.tetrahedronattributes"><code class="docutils literal notranslate"><span class="pre">TetgenIO.tetrahedronattributes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.trifacemarkers.html">tetgenpy.tetgenpy_core.TetgenIO.trifacemarkers</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.trifacemarkers.html#tetgenpy.tetgenpy_core.TetgenIO.trifacemarkers"><code class="docutils literal notranslate"><span class="pre">TetgenIO.trifacemarkers()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.trifaces.html">tetgenpy.tetgenpy_core.TetgenIO.trifaces</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.trifaces.html#tetgenpy.tetgenpy_core.TetgenIO.trifaces"><code class="docutils literal notranslate"><span class="pre">TetgenIO.trifaces()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.voronoi.html">tetgenpy.tetgenpy_core.TetgenIO.voronoi</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="_generated/tetgenpy.tetgenpy_core.TetgenIO.voronoi.html#tetgenpy.tetgenpy_core.TetgenIO.voronoi"><code class="docutils literal notranslate"><span class="pre">TetgenIO.voronoi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="right-next"
+       href="CONTRIBUTING.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Contributing</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install">Install</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start">Quick Start</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-vedo">Working with <code class="docutils literal notranslate"><span class="pre">vedo</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributing">Contributing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of Contents</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/index.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2023, Jaewook Lee.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

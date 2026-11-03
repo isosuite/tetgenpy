@@ -1,0 +1,6 @@
+tetgenpy.plc.PLC.add\_points
+============================
+
+.. currentmodule:: tetgenpy.plc
+
+.. automethod:: PLC.add_points
